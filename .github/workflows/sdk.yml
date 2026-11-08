@@ -1,0 +1,28 @@
+name: Publish CLI Package to npm
+on:
+  push:
+    tags:
+      # This is a glob pattern not a regex
+      - "sdk/v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Setup
+        uses: $/tooling/github/setup
+
+      - name: Build SDK
+        run: pnpm build
+        working-directory: packages/sdk
+
+      - run: pnpm publish --access public --no-git-checks
+        working-directory: packages/sdk
