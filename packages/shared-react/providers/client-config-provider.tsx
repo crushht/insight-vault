@@ -9,6 +9,7 @@ export const DEFAULT_CLIENT_CONFIG: ZClientConfig = {
     disableSignups: false,
     disablePasswordAuth: false,
     oauthAutoRedirect: false,
+    sessionDays: 30,
   },
   turnstile: null,
   inference: {

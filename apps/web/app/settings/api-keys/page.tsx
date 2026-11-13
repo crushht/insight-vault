@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import AddApiKey from "@/components/settings/AddApiKey";
 import ApiKeySettings from "@/components/settings/ApiKeySettings";
@@ -9,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("settings.api_keys.api_keys")} | Karakeep`,
+    title: `${t("settings.api_keys.api_keys")} | ${BRAND.nameZh}`,
   };
 }
 

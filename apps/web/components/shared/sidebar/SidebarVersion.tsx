@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -70,7 +71,10 @@ export default function SidebarVersion({
   const stableRelease = isStableRelease(effectiveChangelogVersion);
   const displayVersion = serverVersion ?? "unknown";
   const changelogDisplayVersion = effectiveChangelogVersion ?? displayVersion;
-  const versionLabel = `Karakeep v${displayVersion}`;
+  const versionLabel =
+    displayVersion === "unknown"
+      ? `${BRAND.nameZh} · 开发版`
+      : `${BRAND.nameZh} v${displayVersion}`;
   const releasePageUrl = useMemo(() => {
     if (
       !effectiveChangelogVersion ||
@@ -191,7 +195,7 @@ export default function SidebarVersion({
         href={releasePageUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-auto flex items-center border-t pt-2 text-sm text-gray-400 hover:underline"
+        className="mt-auto flex items-center truncate border-t border-border pt-2 text-label text-muted-foreground hover:text-foreground hover:underline"
       >
         {versionLabel}
       </Link>
@@ -207,9 +211,11 @@ export default function SidebarVersion({
           aria-label={
             shouldNotify ? t("version.new_release_available") : undefined
           }
-          className="flex w-full items-center justify-between rounded-sm text-left text-sm text-gray-400 transition hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="flex w-full items-center justify-between gap-2 rounded-sm border-t border-border text-left text-label text-muted-foreground transition duration-fast hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/30"
         >
-          <span aria-hidden={shouldNotify}>{versionLabel}</span>
+          <span className="truncate" aria-hidden={shouldNotify}>
+            {versionLabel}
+          </span>
           {shouldNotify && (
             <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
               <span className="sr-only">

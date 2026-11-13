@@ -101,7 +101,7 @@ export default function SubscriptionSettings() {
     switch (status) {
       case "paid":
         return (
-          <Badge variant="default" className="bg-green-500">
+          <Badge variant="default" className="bg-success/100">
             {t("settings.subscription.paid")}
           </Badge>
         );
@@ -215,7 +215,7 @@ export default function SubscriptionSettings() {
                         ] as const
                       ).map((key) => (
                         <li key={key} className="flex items-center text-sm">
-                          <Check className="mr-2 h-4 w-4 shrink-0 text-green-500" />
+                          <Check className="mr-2 h-4 w-4 shrink-0 text-success" />
                           {t(`settings.subscription.${key}`)}
                         </li>
                       ))}
@@ -248,7 +248,7 @@ export default function SubscriptionSettings() {
                               {t("settings.subscription.yearly")}
                               {subscriptionPrice?.monthly?.amount &&
                                 subscriptionPrice?.yearly?.amount && (
-                                  <span className="ml-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                                  <span className="ml-1.5 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
                                     {t("settings.subscription.yearly_savings", {
                                       percent: Math.round(
                                         (1 -

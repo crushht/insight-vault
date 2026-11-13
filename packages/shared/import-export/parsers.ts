@@ -19,7 +19,8 @@ export type ImportSource =
   | "mymind"
   | "readwise-reader"
   | "instapaper"
-  | "onetab";
+  | "onetab"
+  | "raindrop";
 
 export interface ParsedBookmark {
   title: string;
@@ -660,6 +661,104 @@ function deduplicateBookmarks(bookmarks: ParsedBookmark[]): ParsedBookmark[] {
   return [...deduplicatedBookmarksMap.values(), ...textBookmarks];
 }
 
+
+/** 极简 CSV 解析：支持引号包裹、字段内逗号与双引号转义 */
+function parseCsvRows(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += ch;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      row.push(field);
+      field = "";
+    } else if (ch === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else if (ch !== "\r") {
+      field += ch;
+    }
+  }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+/**
+ * Raindrop.io 导出 CSV。
+ *
+ * 列（顺序可能不同，按表头定位）：id,title,note,excerpt,url,folder,tags,created,cover,highlights,lastUpdate
+ * - `folder` 当作一级收藏夹路径
+ * - `tags` 是逗号分隔（CSV 里被引号包裹，所以先按 CSV 解析再 split）
+ * - `created` 是 ISO 时间，转成毫秒时间戳
+ */
+function parseRaindropBookmarkFile(textContent: string): ParsedBookmark[] {
+  const rows = parseCsvRows(textContent).filter((r) =>
+    r.some((c) => c.trim().length > 0),
+  );
+  if (rows.length < 2) {
+    return [];
+  }
+
+  const header = rows[0].map((h) => h.trim().toLowerCase());
+  const col = (name: string) => header.indexOf(name);
+  const iUrl = col("url");
+  const iTitle = col("title");
+  const iNote = col("note");
+  const iTags = col("tags");
+  const iFolder = col("folder");
+  const iCreated = col("created");
+
+  const bookmarks: ParsedBookmark[] = [];
+  for (const row of rows.slice(1)) {
+    const url = (iUrl >= 0 ? row[iUrl] : "").trim();
+    if (!url) continue;
+
+    const title = (iTitle >= 0 ? row[iTitle] : "").trim() || url;
+    const note = (iNote >= 0 ? row[iNote] : "").trim();
+    const folder = (iFolder >= 0 ? row[iFolder] : "").trim();
+    const tags = (iTags >= 0 ? row[iTags] : "")
+      .split(",")
+      .map((tg) => tg.trim())
+      .filter((tg) => tg.length > 0);
+
+    const createdRaw = (iCreated >= 0 ? row[iCreated] : "").trim();
+    const createdMs = createdRaw ? Date.parse(createdRaw) : Number.NaN;
+
+    bookmarks.push({
+      title,
+      content: { type: BookmarkTypes.LINK, url },
+      tags,
+      notes: note || undefined,
+      addDate: Number.isFinite(createdMs) ? createdMs : undefined,
+      paths: folder ? [[folder]] : [],
+    });
+  }
+
+  return bookmarks;
+}
+
 export function parseImportFile(
   source: ImportSource,
   textContent: string,
@@ -703,6 +802,9 @@ export function parseImportFile(
       break;
     case "onetab":
       result = parseOneTabFile(textContent);
+      break;
+    case "raindrop":
+      result = parseRaindropBookmarkFile(textContent);
       break;
   }
   return { bookmarks: deduplicateBookmarks(result), lists: [] };

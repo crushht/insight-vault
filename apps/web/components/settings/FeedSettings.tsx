@@ -107,7 +107,7 @@ export function FeedsEditorDialog() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Subscribe to a new Feed</DialogTitle>
+          <DialogTitle>订阅新的 RSS 源</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -155,7 +155,7 @@ export function FeedsEditorDialog() {
                 return (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
-                      <FormLabel>Import Tags</FormLabel>
+                      <FormLabel>导入标签</FormLabel>
                       <div className="text-sm text-muted-foreground">
                         Automatically import categories from RSS feed as tags
                       </div>
@@ -175,7 +175,7 @@ export function FeedsEditorDialog() {
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Close
+              关闭
             </Button>
           </DialogClose>
           <ActionButton
@@ -187,7 +187,7 @@ export function FeedsEditorDialog() {
             className="items-center"
           >
             <Plus className="size-4" />
-            Add
+            添加
           </ActionButton>
         </DialogFooter>
       </DialogContent>
@@ -244,7 +244,7 @@ export function EditFeedDialog({ feed }: { feed: ZFeed }) {
       </Tooltip>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Feed</DialogTitle>
+          <DialogTitle>编辑订阅</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -305,7 +305,7 @@ export function EditFeedDialog({ feed }: { feed: ZFeed }) {
                 return (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
-                      <FormLabel>Import Tags</FormLabel>
+                      <FormLabel>导入标签</FormLabel>
                       <div className="text-sm text-muted-foreground">
                         Automatically import categories from RSS feed as tags
                       </div>
@@ -491,8 +491,8 @@ export default function FeedSettings() {
               <TableRow>
                 <TableHead>{t("common.name")}</TableHead>
                 <TableHead>{t("common.url")}</TableHead>
-                <TableHead>Last Fetch</TableHead>
-                <TableHead>Last Status</TableHead>
+                <TableHead>上次抓取</TableHead>
+                <TableHead>上次状态</TableHead>
                 <TableHead>{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>

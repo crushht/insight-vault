@@ -1400,3 +1400,267 @@ export const userReadingProgressRelations = relations(
     }),
   }),
 );
+
+/**
+ * 语义分块（P5 / RAG 前置）。
+ *
+ * 每行是一个「可直接嵌入的文本块」，保留原文字符区间供引用回跳。
+ * 与 `bookmarks` 1:N；同一收藏的块序号唯一，便于重建时幂等覆盖。
+ */
+export const contentReports = sqliteTable(
+  "contentReports",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // topic = 智能专题，creation = 创作工作台
+    kind: text("kind", { enum: ["topic", "creation"] }).notNull(),
+    title: text("title").notNull(),
+    markdown: text("markdown").notNull(),
+    sourceCount: integer("sourceCount").notNull().default(0),
+    mode: text("mode", { enum: ["ai", "draft"] }).notNull(),
+    createdAt: createdAtField(),
+  },
+  (t) => [
+    index("contentReports_userId_idx").on(t.userId, t.createdAt),
+  ],
+);
+
+export const bookmarkChunks = sqliteTable(
+  "bookmarkChunks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    bookmarkId: text("bookmarkId")
+      .notNull()
+      .references(() => bookmarks.id, { onDelete: "cascade" }),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    ordinal: integer("ordinal").notNull(),
+    text: text("text").notNull(),
+    tokenCount: integer("tokenCount").notNull().default(0),
+    startOffset: integer("startOffset"),
+    endOffset: integer("endOffset"),
+    embeddingStatus: text("embeddingStatus", {
+      enum: ["pending", "success", "failure"],
+    })
+      .notNull()
+      .default("pending"),
+    embeddingModel: text("embeddingModel"),
+    embeddingDims: integer("embeddingDims"),
+    contentHash: text("contentHash").notNull(),
+    createdAt: createdAtField(),
+  },
+  (t) => [
+    unique("bookmarkChunks_bookmarkId_ordinal_unique").on(t.bookmarkId, t.ordinal),
+    index("bookmarkChunks_userId_idx").on(t.userId),
+    index("bookmarkChunks_embeddingStatus_idx").on(t.embeddingStatus),
+  ],
+);
+
+/**
+ * 知识图谱（P6）。
+ *
+ * entities      实体本身（人物/地点/组织/产品/技术/概念/主题）
+ * entityMentions 实体在某条收藏（可精确到 chunk）中的出现位置
+ * entityRelations 实体之间的关系（带证据收藏）
+ *
+ * 命名规范化放在 `normalizedName`，同一用户同一类型的同名实体只存一条。
+ */
+export const entities = sqliteTable(
+  "entities",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: text("kind", {
+      enum: ["person", "place", "org", "product", "tech", "concept", "topic"],
+    }).notNull(),
+    name: text("name").notNull(),
+    normalizedName: text("normalizedName").notNull(),
+    description: text("description"),
+    mentionCount: integer("mentionCount").notNull().default(0),
+    createdAt: createdAtField(),
+  },
+  (t) => [
+    unique("entities_userId_kind_normalizedName_unique").on(
+      t.userId,
+      t.kind,
+      t.normalizedName,
+    ),
+    index("entities_userId_idx").on(t.userId),
+    index("entities_userId_kind_idx").on(t.userId, t.kind),
+  ],
+);
+
+export const entityMentions = sqliteTable(
+  "entityMentions",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    entityId: text("entityId")
+      .notNull()
+      .references(() => entities.id, { onDelete: "cascade" }),
+    bookmarkId: text("bookmarkId")
+      .notNull()
+      .references(() => bookmarks.id, { onDelete: "cascade" }),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    chunkId: text("chunkId").references(() => bookmarkChunks.id, {
+      onDelete: "set null",
+    }),
+    quote: text("quote"),
+    confidence: real("confidence").notNull().default(0.8),
+    createdAt: createdAtField(),
+  },
+  (t) => [
+    index("entityMentions_entityId_idx").on(t.entityId),
+    index("entityMentions_bookmarkId_idx").on(t.bookmarkId),
+    index("entityMentions_userId_idx").on(t.userId),
+  ],
+);
+
+export const entityRelations = sqliteTable(
+  "entityRelations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    fromEntityId: text("fromEntityId")
+      .notNull()
+      .references(() => entities.id, { onDelete: "cascade" }),
+    toEntityId: text("toEntityId")
+      .notNull()
+      .references(() => entities.id, { onDelete: "cascade" }),
+    relation: text("relation").notNull(),
+    weight: real("weight").notNull().default(1),
+    evidenceBookmarkId: text("evidenceBookmarkId").references(() => bookmarks.id, {
+      onDelete: "set null",
+    }),
+    createdAt: createdAtField(),
+  },
+  (t) => [
+    unique("entityRelations_unique").on(
+      t.userId,
+      t.fromEntityId,
+      t.toEntityId,
+      t.relation,
+    ),
+    index("entityRelations_userId_idx").on(t.userId),
+    index("entityRelations_from_idx").on(t.fromEntityId),
+  ],
+);
+
+/**
+ * 商业化（P7）：订单与支付回调幂等。
+ *
+ * `orders.status` 是订单状态机：
+ *   created → pending → paid → fulfilled
+ *   异常分支：failed / refunding → refunded / canceled
+ *
+ * `webhookEvents` 用来做**幂等**：同一个 provider 的同一个事件只处理一次。
+ */
+export const orders = sqliteTable(
+  "orders",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    providerRef: text("providerRef").notNull(),
+    status: text("status", {
+      enum: [
+        "created",
+        "pending",
+        "paid",
+        "fulfilled",
+        "failed",
+        "refunding",
+        "refunded",
+        "canceled",
+      ],
+    })
+      .notNull()
+      .default("created"),
+    plan: text("plan").notNull(),
+    amountMinor: integer("amountMinor").notNull(),
+    currency: text("currency").notNull().default("CNY"),
+    paidAt: integer("paidAt", { mode: "timestamp" }),
+    refundedAt: integer("refundedAt", { mode: "timestamp" }),
+    rawPayload: text("rawPayload"),
+    createdAt: createdAtField(),
+  },
+  (t) => [
+    unique("orders_provider_ref_unique").on(t.provider, t.providerRef),
+    index("orders_userId_idx").on(t.userId),
+    index("orders_userId_createdAt_idx").on(t.userId, t.createdAt),
+    index("orders_status_idx").on(t.status),
+  ],
+);
+
+export const webhookEvents = sqliteTable(
+  "webhookEvents",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    provider: text("provider").notNull(),
+    externalId: text("externalId").notNull(),
+    type: text("type").notNull(),
+    status: text("status").notNull().default("received"),
+    error: text("error"),
+    receivedAt: createdAtField(),
+    processedAt: integer("processedAt", { mode: "timestamp" }),
+  },
+  (t) => [
+    unique("webhookEvents_provider_externalId_unique").on(t.provider, t.externalId),
+    index("webhookEvents_status_idx").on(t.status),
+  ],
+);
+
+/**
+ * 用户权益（P7）。
+ *
+ * 与上游「把配额物化进 users 三列」并存：
+ * - `users.*Quota` 是热路径读取的快速副本（保持兼容）；
+ * - 这张表是可审计的权益来源（来源、周期、各维度上限）。
+ *
+ * 两者由 `syncEntitlements()` 在订单进入 paid/fulfilled 时一起更新。
+ */
+export const userEntitlements = sqliteTable(
+  "userEntitlements",
+  {
+    userId: text("userId")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tier: text("tier", { enum: ["free", "pro", "max"] })
+      .notNull()
+      .default("free"),
+    source: text("source", { enum: ["manual", "stripe", "alipay", "revenuecat"] })
+      .notNull()
+      .default("manual"),
+    periodStart: integer("periodStart", { mode: "timestamp" }),
+    periodEnd: integer("periodEnd", { mode: "timestamp" }),
+    aiTokensLimit: integer("aiTokensLimit").notNull().default(200000),
+    aiCallsLimit: integer("aiCallsLimit").notNull().default(200),
+    storageLimit: integer("storageLimit").notNull().default(1073741824),
+    updatedAt: modifiedAtMsField(),
+  },
+  (t) => [index("userEntitlements_tier_idx").on(t.tier)],
+);

@@ -193,9 +193,9 @@ export default function SubscriptionSettings() {
       "There's a problem with your payment method. Update it in your store's subscription settings to keep your plan.";
   } else if (isWebSubscriber) {
     planFooter =
-      "Your subscription is managed from the Karakeep web app's settings.";
+      "订阅在你的灵感仓网页版中管理's settings.";
   } else if (status?.tier === "custom") {
-    planFooter = "Your plan is managed by the Karakeep team.";
+    planFooter = "当前方案由灵感仓团队管理。";
   }
 
   const canUpgrade =

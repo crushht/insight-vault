@@ -284,7 +284,7 @@ export default function LinkContentSection({
         {section === "archive" && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex h-10 items-center gap-1 rounded-md border border-blue-500/50 bg-blue-50 px-3 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <div className="flex h-10 items-center gap-1 rounded-md border border-brand-500/50 bg-brand-50 px-3 text-brand-600 dark:bg-brand-900 dark:text-brand-300">
                 <Info className="h-4 w-4" />
               </div>
             </TooltipTrigger>

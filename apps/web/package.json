@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@karakeep/web",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "oxlint --ignore-path=../../.gitignore .",
     "lint:fix": "oxlint --ignore-path=../../.gitignore . --fix",
-    "test": "vitest",
+    "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
     "format": "oxfmt --ignore-path=../../.gitignore --check .",
     "format:fix": "oxfmt --ignore-path=../../.gitignore ."

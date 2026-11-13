@@ -17,19 +17,36 @@ interface SentEmail {
   url: string;
 }
 
-async function setup(env: Record<string, string> = {}) {
+async function setup(
+  env: Record<string, string> = {},
+  opts: { otpFails?: boolean } = {},
+) {
   vi.resetModules();
   vi.stubEnv("DATA_DIR", path.join(os.tmpdir(), "karakeep-auth-test"));
   vi.stubEnv("NEXTAUTH_URL", BASE_URL);
   vi.stubEnv("NEXTAUTH_SECRET", "test-secret-test-secret-test-secret");
+  // 本地开发机的 .env / .env.local 里通常配了 SMTP，会让「没配 SMTP」的用例失真。
+  // 默认先清空，需要 SMTP 的用例自己在 env 里打开。
+  if (!("SMTP_HOST" in env)) {
+    vi.stubEnv("SMTP_HOST", "");
+  }
   for (const [key, value] of Object.entries(env)) {
     vi.stubEnv(key, value);
   }
 
   const db = getInMemoryDB(true);
   const sent: SentEmail[] = [];
+  const otpCodes: { email: string; code: string }[] = [];
   vi.doMock("@karakeep/db", () => ({ db }));
   vi.doMock("@karakeep/trpc/email", () => ({
+    // 默认让「发 6 位验证码」失败，从而回退到上游用例依赖的验证链接；
+    // 想验证验证码通道的用例传 { otpFails: false }。
+    sendOtpEmail: async (email: string, code: string) => {
+      if (opts.otpFails !== false) {
+        throw new Error("SMTP is not configured in tests");
+      }
+      otpCodes.push({ email, code });
+    },
     sendVerificationEmail: async (
       email: string,
       _name: string,
@@ -87,7 +104,7 @@ async function setup(env: Record<string, string> = {}) {
     return await call("/sign-in/email", { body: { email, password } });
   }
 
-  return { auth, db, sent, call, signUp, signIn };
+  return { auth, db, sent, otpCodes, call, signUp, signIn };
 }
 
 function errorCode(json: unknown) {
@@ -333,6 +350,26 @@ describe("with email verification required", () => {
     // Signing up again with the same email doesn't reveal that it's taken.
     const duplicate = await signUp("user@example.com");
     expect(duplicate.status).toBe(200);
+  });
+
+  test("sends a 6-digit code instead of a link when mail delivery works", async () => {
+    const { call, sent, otpCodes } = await setup(env, { otpFails: false });
+
+    const res = await call("/sign-up/email", {
+      body: {
+        name: "User",
+        email: "user@example.com",
+        password: "password123",
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.cookie).toBe("");
+
+    expect(otpCodes).toHaveLength(1);
+    expect(otpCodes[0].email).toBe("user@example.com");
+    expect(otpCodes[0].code).toMatch(/^\d{6}$/);
+    // 验证码通道可用时，不再额外发验证链接
+    expect(sent).toHaveLength(0);
   });
 
   test("password reset", async () => {

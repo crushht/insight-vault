@@ -1212,6 +1212,12 @@ export class ManualList extends List {
     // Check that the user can edit this list
     this.ensureCanEdit();
 
+    // 这里**故意**不校验书签归属（对比 addToList 会校验）：
+    // 共享列表的 editor 本来就该能管理列表内容——把某条从列表里摘掉只是
+    // 删除 bookmarksInLists 这行关联，不会删除书签本身（见下方 delete）。
+    // 若加上归属校验，editor 将无法移除任何一条别人分享进来的收藏，
+    // 协作功能会直接失效。
+
     const deleted = await this.ctx.db
       .delete(bookmarksInLists)
       .where(

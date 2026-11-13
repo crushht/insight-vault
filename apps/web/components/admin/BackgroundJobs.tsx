@@ -52,10 +52,10 @@ function JobStatusExplanation() {
   const { t } = useTranslation();
 
   return (
-    <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-900/10">
+    <Card className="border-brand-200 bg-brand-50/50 dark:border-brand-700 dark:bg-brand-900/20">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg text-blue-900 dark:text-blue-200">
-          <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        <CardTitle className="flex items-center gap-2 text-lg text-brand-700 dark:text-brand-300">
+          <HelpCircle className="h-5 w-5 text-brand-600 dark:text-brand-500" />
           {t("admin.background_jobs.status.title")}
         </CardTitle>
       </CardHeader>
@@ -63,39 +63,39 @@ function JobStatusExplanation() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 items-center justify-center">
-              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <Clock className="h-4 w-4 text-brand-600 dark:text-brand-500" />
             </div>
             <div>
-              <h4 className="font-medium text-blue-900 dark:text-blue-200">
+              <h4 className="font-medium text-brand-700 dark:text-brand-300">
                 {t("admin.background_jobs.status.queued.title")}
               </h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
+              <p className="text-sm text-brand-600 dark:text-brand-300">
                 {t("admin.background_jobs.status.queued.description")}
               </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 items-center justify-center">
-              <RefreshCw className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <RefreshCw className="h-4 w-4 text-warning dark:text-warning" />
             </div>
             <div>
-              <h4 className="font-medium text-yellow-900 dark:text-yellow-400">
+              <h4 className="font-medium text-warning dark:text-warning">
                 {t("admin.background_jobs.status.unprocessed.title")}
               </h4>
-              <p className="text-sm text-yellow-700 dark:text-yellow-500">
+              <p className="text-sm text-warning dark:text-warning">
                 {t("admin.background_jobs.status.unprocessed.description")}
               </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 items-center justify-center">
-              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500" />
+              <AlertTriangle className="h-4 w-4 text-destructive dark:text-destructive" />
             </div>
             <div>
-              <h4 className="font-medium text-red-900 dark:text-red-500">
+              <h4 className="font-medium text-destructive dark:text-destructive">
                 {t("admin.background_jobs.status.failed.title")}
               </h4>
-              <p className="text-sm text-red-700 dark:text-red-500">
+              <p className="text-sm text-destructive dark:text-destructive">
                 {t("admin.background_jobs.status.failed.description")}
               </p>
             </div>
@@ -194,7 +194,7 @@ function JobCard({
       <CardContent className="space-y-5">
         <div className="flex flex-wrap items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-blue-500" />
+            <Clock className="h-4 w-4 text-brand-500" />
             <span className="font-medium">
               {t("admin.background_jobs.status.queued.title")}
             </span>
@@ -202,7 +202,7 @@ function JobCard({
           </div>
           {stats.pending !== undefined && (
             <div className="flex items-center gap-2">
-              <RefreshCw className="h-4 w-4 text-yellow-500" />
+              <RefreshCw className="h-4 w-4 text-warning" />
               <span className="font-medium">
                 {t("admin.background_jobs.status.unprocessed.title")}
               </span>
@@ -211,7 +211,7 @@ function JobCard({
           )}
           {stats.failed !== undefined && stats.failed > 0 && (
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <AlertTriangle className="h-4 w-4 text-destructive" />
               <span className="font-medium">
                 {t("admin.background_jobs.status.failed.title")}
               </span>
@@ -229,7 +229,7 @@ function JobCard({
               {actions.map((action, index) => (
                 <ActionConfirmingDialog
                   key={index}
-                  title="Confirm Action"
+                  title={t("admin.background_jobs.confirm_action")}
                   description={`Are you sure you want to ${action.label.toLowerCase()}?`}
                   actionButton={(setDialogOpen) => (
                     <ActionButton

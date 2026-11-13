@@ -19,7 +19,7 @@ export function InvitationNotificationBadge() {
 
   return (
     <div className="flex items-center px-1">
-      <span className="rounded-full bg-blue-500 px-2 py-0.5 text-center text-xs text-white">
+      <span className="rounded-full bg-brand-500 px-2 py-0.5 text-center text-xs text-white">
         {pendingInvitationsCount}
       </span>
     </div>

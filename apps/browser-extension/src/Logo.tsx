@@ -7,12 +7,12 @@ export default function Logo({ className }: { className?: string }) {
     <span className="flex items-center">
       <img
         src={logoImg}
-        alt="karakeep logo"
+        alt="灵感仓 logo"
         className={cn("h-8 dark:hidden", className)}
       />
       <img
         src={logoImgWhite}
-        alt="karakeep logo"
+        alt="灵感仓 logo"
         className={cn("hidden h-8 dark:block", className)}
       />
     </span>

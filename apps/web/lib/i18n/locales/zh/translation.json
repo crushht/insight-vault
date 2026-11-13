@@ -1,5 +1,70 @@
 {
+  "auth": {
+    "reset_title": "重置密码",
+    "reset_success_title": "密码重置成功",
+    "reset_desc": "在下方输入新密码。",
+    "reset_success_desc": "密码已重置，现在可以用新密码登录。",
+    "new_password": "新密码",
+    "new_password_placeholder": "请输入新密码",
+    "confirm_new_password": "确认新密码",
+    "confirm_new_password_placeholder": "请再次输入新密码",
+    "reset_submit": "重置密码",
+    "go_to_sign_in": "去登录",
+    "passwords_dont_match": "两次输入的密码不一致",
+    "invalid_token": "重置链接无效或已过期",
+    "check_email_title": "查收邮件",
+    "check_email_desc": "如果该邮箱已注册，我们已发送一封重置密码的邮件。",
+    "forgot_desc": "输入邮箱地址，我们会发送一封重置密码的链接。",
+    "email_address_placeholder": "请输入邮箱地址",
+    "send_reset_link": "发送重置链接",
+    "invalid_email": "请输入有效的邮箱地址",
+    "unexpected_error": "发生意外错误，请重试。",
+    "sign_up_title": "创建账户",
+    "sign_up_subtitle": "加入{{brand}}，开始整理你的收藏",
+    "full_name": "姓名",
+    "full_name_placeholder": "请输入姓名",
+    "confirm_password": "确认密码",
+    "confirm_password_placeholder": "请再次输入密码",
+    "create_password_placeholder": "设置密码",
+    "sign_up_unavailable": "暂不开放注册",
+    "signups_disabled": "当前已关闭账号注册",
+    "signups_disabled_hint": "注册已关闭，请联系管理员获取访问权限。",
+    "back_to_sign_in": "返回登录",
+    "already_have_account": "已有账户？",
+    "oauth_failed": "第三方登录失败",
+    "welcome_back": "欢迎回来",
+    "sign_in_to": "登录你的{{brand}}账户",
+    "email_placeholder": "请输入邮箱",
+    "password_placeholder": "请输入密码",
+    "sign_in": "登录",
+    "forgot_password": "忘记密码？",
+    "no_account": "还没有账户？",
+    "sign_up": "注册",
+    "incorrect_credentials": "邮箱或密码错误",
+    "or": "或",
+    "demo_mode": "演示模式",
+    "password_auth_disabled": "当前已关闭密码登录。"
+  },
+  "invite": {
+    "loading_title": "正在加载邀请",
+    "loading_desc": "正在验证邀请信息，请稍候…",
+    "invalid_title": "邀请无效",
+    "invalid_desc": "该邀请链接无效或已被移除。",
+    "expired_title": "邀请已过期",
+    "expired_desc": "该邀请链接已过期，不再有效。",
+    "expired_hint": "请联系管理员重新获取邀请。",
+    "accept_title": "接受邀请",
+    "accept_subtitle": "完善账户信息，加入{{brand}}",
+    "invited_email": "受邀邮箱：",
+    "creating_account": "正在创建账户…",
+    "create_and_sign_in": "创建账户并登录",
+    "signin_failed": "账户已创建，但自动登录失败，请手动登录。"
+  },
   "common": {
+    "topics": "智能专题",
+    "membership": "支持我们",
+    "knowledge_graph": "知识图谱",
+    "ai_chat": "AI 对话",
     "url": "URL",
     "name": "名称",
     "email": "电子邮件",
@@ -43,7 +108,8 @@
     "pdf": "已存档的 PDF",
     "default": "默认",
     "id": "ID",
-    "last_used": "上次使用"
+    "last_used": "上次使用",
+    "create": "创作工作台"
   },
   "layouts": {
     "masonry": "瀑布流",
@@ -178,6 +244,7 @@
       }
     },
     "ai": {
+      "preferences": "AI 偏好",
       "ai_settings": "AI设置",
       "tagging_rules": "标签规则",
       "tagging_rule_description": "在此添加的提示将包含在模型生成标签的规则中。您可以在提示预览部分查看最终的提示。",
@@ -753,7 +820,8 @@
         "regenerate_embeddings_for_pending_bookmarks_only": "仅为待处理书签重新生成嵌入",
         "regenerate_embeddings_for_failed_bookmarks_only": "仅为失败的书签重新生成嵌入",
         "regenerate_embeddings_for_all_bookmarks": "为所有书签重新生成嵌入"
-      }
+      },
+      "confirm_action": "确认操作"
     },
     "users_list": {
       "users_list": "用户列表",
@@ -819,6 +887,47 @@
       "embedding_status": "嵌入状态",
       "regenerate_embedding": "重新生成嵌入",
       "regenerate_embedding_queued": "嵌入重新生成任务已进入队列"
+    },
+    "add_user": {
+      "title": "添加用户",
+      "name": "姓名",
+      "email": "邮箱",
+      "password": "密码",
+      "confirm_password": "确认密码",
+      "role": "角色",
+      "role_user": "普通用户",
+      "role_admin": "管理员"
+    },
+    "reset_password": {
+      "title": "重置密码",
+      "new_password": "新密码",
+      "confirm_new_password": "确认新密码"
+    },
+    "create_invite": {
+      "title": "发送用户邀请",
+      "email_address": "邮箱地址"
+    },
+    "invites": {
+      "email": "邮箱",
+      "invited_by": "邀请人",
+      "created": "创建时间",
+      "actions": "操作",
+      "revoke_title": "撤销邀请"
+    },
+    "update_user": {
+      "title": "编辑用户",
+      "role": "角色",
+      "role_user": "普通用户",
+      "role_admin": "管理员",
+      "bookmark_quota": "收藏上限",
+      "storage_quota": "存储上限（字节）",
+      "unlimited": "不限（留空）"
+    },
+    "overview": {
+      "update_available": "有新版本可用"
+    },
+    "orders": {
+      "orders": "订单"
     }
   },
   "options": {
@@ -831,6 +940,7 @@
     "follow_us_on_x": "在 X 上关注我们"
   },
   "lists": {
+    "section_title": "收藏夹",
     "all_lists": "所有列表",
     "favourites": "收藏",
     "new_list": "新列表",

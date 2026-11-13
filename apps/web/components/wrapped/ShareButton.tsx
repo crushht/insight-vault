@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { RefObject, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, Share2 } from "lucide-react";
@@ -45,8 +46,8 @@ export function ShareButton({
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: "My 2025 Karakeep Wrapped",
-            text: "Check out my 2025 Karakeep Wrapped!",
+            title: `My 2025 ${BRAND.nameZh} Wrapped`,
+            text: `Check out my 2025 ${BRAND.nameZh} Wrapped!`,
           });
           return;
         }
@@ -76,7 +77,7 @@ export function ShareButton({
       disabled={isGenerating}
       size="icon"
       variant="ghost"
-      className="h-10 w-10 rounded-full bg-white/10 text-slate-100 hover:bg-white/20 dark:hover:bg-white/20"
+      className="h-10 w-10 rounded-full bg-white/10 text-white/90 hover:bg-white/20 dark:hover:bg-white/20"
       aria-label={isNativeShareAvailable ? "Share" : "Download"}
       title={isNativeShareAvailable ? "Share" : "Download"}
     >

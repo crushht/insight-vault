@@ -30,6 +30,43 @@ function buildTransporter() {
 
 type Transporter = ReturnType<typeof buildTransporter>;
 
+/**
+ * 发一封「登录验证码」邮件。
+ *
+ * 和验证链接不同，这里发的是 6 位数字 —— 用户不用离开应用就能登录，
+ * 适合桌面端 / 手机端这种「邮件链接点开也不方便」的场景。
+ */
+export async function sendOtpEmail(
+  to: string,
+  otp: string,
+  opts?: { expiresInMinutes?: number; purpose?: "sign-in" | "email-verification" },
+): Promise<void> {
+  const minutes = opts?.expiresInMinutes ?? 5;
+  const purposeLabel =
+    opts?.purpose === "email-verification" ? "邮箱验证" : "登录";
+
+  const transporter = buildTransporter();
+  const from = serverConfig.email.smtp?.from ?? serverConfig.email.smtp?.user;
+
+  await transporter.sendMail({
+    from: `"灵感仓" <${from}>`,
+    to,
+    subject: `【灵感仓】${purposeLabel}验证码 ${otp}`,
+    text: `你的${purposeLabel}验证码是 ${otp}，${minutes} 分钟内有效。\n如果不是你本人操作，请忽略这封邮件。`,
+    html: `
+      <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a1a1a">
+        <h2 style="margin:0 0 8px;font-size:18px">${purposeLabel}验证码</h2>
+        <p style="margin:0 0 16px;color:#555">请把下面的 6 位数字填进应用：</p>
+        <div style="font-size:32px;letter-spacing:8px;font-weight:600;color:#0B6E6E;
+                    background:#F2F7F7;border-radius:8px;padding:16px;text-align:center">
+          ${otp}
+        </div>
+        <p style="margin:16px 0 0;color:#888;font-size:13px">${minutes} 分钟内有效。如果不是你本人操作，请忽略这封邮件。</p>
+      </div>`,
+  });
+}
+
+
 type Fn<Args extends unknown[] = unknown[]> = (
   transport: Transporter,
   ...args: Args

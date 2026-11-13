@@ -6,12 +6,15 @@ interface FilePickerButtonProps extends Omit<ActionButtonProps, "onClick"> {
   onFileSelect?: (file: File) => void;
   accept?: string;
   multiple?: boolean;
+  /** 给隐藏的 file input 加 data-testid，方便自动化测试定位 */
+  inputTestId?: string;
 }
 
 const FilePickerButton: React.FC<FilePickerButtonProps> = ({
   onFileSelect,
   accept,
   multiple = false,
+  inputTestId,
   ...buttonProps
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,6 +46,7 @@ const FilePickerButton: React.FC<FilePickerButtonProps> = ({
         className="hidden"
         accept={accept}
         multiple={multiple}
+        data-testid={inputTestId}
       />
     </div>
   );

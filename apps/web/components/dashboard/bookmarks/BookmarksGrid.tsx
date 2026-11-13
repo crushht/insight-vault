@@ -264,6 +264,7 @@ export default function BookmarksGrid({
         list: <div className="grid grid-cols-1">{children}</div>,
         compact: <div className="grid grid-cols-1">{children}</div>,
       })}
+      {bookmarks.length === 0 && showEditorCard && <NoBookmarksBanner compact />}
       {hasNextPage && (
         <div className="flex justify-center">
           <ActionButton
@@ -273,7 +274,7 @@ export default function BookmarksGrid({
             onClick={() => fetchNextPage()}
             variant="ghost"
           >
-            Load More
+            加载更多
           </ActionButton>
         </div>
       )}

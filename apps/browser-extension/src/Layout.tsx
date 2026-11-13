@@ -34,8 +34,8 @@ export default function Layout() {
           target="_blank"
           rel="noreferrer"
           href={`${settings.address}/dashboard/bookmarks`}
-          aria-label="Open Karakeep"
-          title="Open Karakeep"
+          aria-label="打开灵感仓"
+          title="打开灵感仓"
         >
           <House className="size-4" />
         </a>

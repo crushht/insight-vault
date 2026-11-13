@@ -201,8 +201,8 @@ export default function AllTagsView() {
         if (tags.length === 0) {
           return (
             <div className="py-8 text-center">
-              <Tag className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-              <p className="mb-4 text-gray-500">
+              <Tag className="mx-auto mb-4 h-12 w-12 text-border" />
+              <p className="mb-4 text-muted-foreground/80">
                 {hasActiveSearch ? searchEmptyMessage : emptyMessage}
               </p>
             </div>

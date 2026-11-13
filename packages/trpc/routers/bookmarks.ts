@@ -1,5 +1,7 @@
 import { experimental_trpcMiddleware, TRPCError } from "@trpc/server";
-import { and, eq, gt, inArray, like, lt, or } from "drizzle-orm";
+import { and, eq, gt, inArray, like, lt, or , desc } from "drizzle-orm";
+
+import { normalizeUrlForDedup } from "@karakeep/shared/urlNormalization";
 import { z } from "zod";
 
 import {
@@ -129,13 +131,21 @@ export const ensureBookmarkAccess = experimental_trpcMiddleware<{
 });
 
 async function attemptToDedupLink(ctx: AuthedContext, url: string) {
+  // 同一篇文章常带不同跟踪参数被收藏两次（utm / spm / share_token…）。
+  // 用「原始 URL + 归一化 URL」一起查，命中率更高，且不改动已存数据。
+  const candidates = Array.from(new Set([url, normalizeUrlForDedup(url)]));
   const result = await ctx.db
     .select({
       id: bookmarkLinks.id,
     })
     .from(bookmarkLinks)
     .leftJoin(bookmarks, eq(bookmarks.id, bookmarkLinks.id))
-    .where(and(eq(bookmarkLinks.url, url), eq(bookmarks.userId, ctx.user.id)));
+    .where(
+      and(
+        inArray(bookmarkLinks.url, candidates),
+        eq(bookmarks.userId, ctx.user.id),
+      ),
+    );
 
   if (result.length == 0) {
     return null;
@@ -512,24 +522,17 @@ export const bookmarksAppRouter = router({
           break;
         }
         case BookmarkTypes.TEXT: {
-          if (serverConfig.embedding.enableAutoIndexing) {
-            await EmbeddingsQueue.enqueue(
-              {
-                bookmarkId: bookmark.id,
-                type: "embed",
-                runTaggingOnComplete: true,
-              },
-              enqueueOpts,
-            );
-          } else {
-            await OpenAIQueue.enqueue(
-              {
-                bookmarkId: bookmark.id,
-                type: "tag",
-              },
-              enqueueOpts,
-            );
-          }
+          // 分块（chunk）是 AI 检索与引用的基础，不能因为「没配 embedding provider」就跳过：
+          // worker 侧在没有 embedding client 时，仍会先把块落库再返回（见 embeddingsWorker）。
+          // 之前这里只在 enableAutoIndexing 为真时才入队，导致「文字笔记永远不进 RAG」。
+          await EmbeddingsQueue.enqueue(
+            {
+              bookmarkId: bookmark.id,
+              type: "embed",
+              runTaggingOnComplete: true,
+            },
+            enqueueOpts,
+          );
           break;
         }
         case BookmarkTypes.ASSET: {
@@ -741,6 +744,17 @@ export const bookmarksAppRouter = router({
           ctx.db,
         );
       }
+      // 编辑正文后必须重建分块：否则检索与 AI 引用会一直命中旧内容。
+      // 与创建路径保持一致 —— 分块不依赖 embedding provider（worker 会先落块再按需嵌入）。
+      await EmbeddingsQueue.enqueue(
+        {
+          bookmarkId: input.bookmarkId,
+          type: "embed",
+          runTaggingOnComplete: false,
+        },
+        { groupId: ctx.user.id },
+      );
+
       await Promise.all([
         triggerSearchReindex(input.bookmarkId, {
           groupId: ctx.user.id,
@@ -793,6 +807,17 @@ export const bookmarksAppRouter = router({
           )
           .run();
       });
+      // 编辑正文后必须重建分块：否则检索与 AI 引用会一直命中旧内容。
+      // 与创建路径一致 —— 分块不依赖 embedding provider。
+      await EmbeddingsQueue.enqueue(
+        {
+          bookmarkId: input.bookmarkId,
+          type: "embed",
+          runTaggingOnComplete: false,
+        },
+        { groupId: ctx.user.id },
+      );
+
       await Promise.all([
         triggerSearchReindex(input.bookmarkId, {
           groupId: ctx.user.id,
@@ -983,6 +1008,77 @@ export const bookmarksAppRouter = router({
         await Bookmark.fromId(ctx, input.bookmarkId, /* includeContent: */ true)
       ).asReadableContent(input.format);
     }),
+  /**
+   * 导出全部收藏（JSON 或 Markdown）。
+   *
+   * 不追求与上游 `toExportFormat` 的字段完全一致 —— 目的很明确：
+   * **用户随时能把自己的数据拿走**。JSON 适合再导入，Markdown 适合直接读。
+   */
+  exportAll: bookmarksProcedure
+    .input(
+      z.object({
+        format: z.enum(["json", "markdown"]).default("markdown"),
+        limit: z.number().int().min(1).max(5000).default(1000),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const rows = await ctx.db
+        .select({
+          id: bookmarks.id,
+          title: bookmarks.title,
+          note: bookmarks.note,
+          summary: bookmarks.summary,
+          createdAt: bookmarks.createdAt,
+          archived: bookmarks.archived,
+          url: bookmarkLinks.url,
+          text: bookmarkTexts.text,
+          assetFileName: bookmarkAssets.fileName,
+          assetType: bookmarkAssets.assetType,
+          assetId: bookmarkAssets.assetId,
+        })
+        .from(bookmarks)
+        .leftJoin(bookmarkLinks, eq(bookmarkLinks.id, bookmarks.id))
+        .leftJoin(bookmarkTexts, eq(bookmarkTexts.id, bookmarks.id))
+        .leftJoin(bookmarkAssets, eq(bookmarkAssets.id, bookmarks.id))
+        .where(eq(bookmarks.userId, ctx.user.id))
+        .orderBy(desc(bookmarks.createdAt))
+        .limit(input.limit);
+
+      if (input.format === "json") {
+        return {
+          filename: "insight-vault-export.json",
+          mime: "application/json;charset=utf-8",
+          content: JSON.stringify(rows, null, 2),
+          count: rows.length,
+        };
+      }
+
+      const md = rows
+        .map((r) => {
+          const title = r.title ?? r.url ?? r.id;
+          const lines = [`## ${title}`];
+          if (r.url) lines.push(`<${r.url}>`);
+          if (r.summary) lines.push("", `> ${r.summary}`);
+          if (r.note) lines.push("", r.note);
+          if (r.text) lines.push("", r.text);
+          if (r.assetFileName) {
+            lines.push(
+              "",
+              `[attachment] ${r.assetType ?? "file"}: ${r.assetFileName} (assetId=${r.assetId ?? r.id})`,
+            );
+          }
+          return lines.join("\n");
+        })
+        .join("\n\n---\n\n");
+
+      return {
+        filename: "insight-vault-export.md",
+        mime: "text/markdown;charset=utf-8",
+        content: `# 灵感仓导出\n\n共 ${rows.length} 条\n\n${md}`,
+        count: rows.length,
+      };
+    }),
+
   searchBookmarks: bookmarksProcedure
     .use(createBookmarksQueriedMiddleware())
     .use(createEventLogMiddleware("search.query"))
@@ -1041,10 +1137,44 @@ export const bookmarksAppRouter = router({
       const fullTextSearch = async (limit: number, searchOffset?: number) => {
         const client = await getSearchClient();
         if (!client) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Search functionality is not configured",
-          });
+          // SQL LIKE 降级：没有配置 Meilisearch 时也要能搜。
+          // 与 AI 检索（chat.ts）保持一致的取舍 —— 精度低，但功能可用。
+          const raw = parsedQuery.text?.trim() ?? "";
+          if (raw.length === 0) {
+            return { hits: [], totalHits: 0 };
+          }
+          const pattern = `%${raw}%`;
+          const rows = await ctx.db
+            .select({ id: bookmarks.id })
+            .from(bookmarks)
+            .leftJoin(bookmarkLinks, eq(bookmarkLinks.id, bookmarks.id))
+            .leftJoin(bookmarkTexts, eq(bookmarkTexts.id, bookmarks.id))
+            .leftJoin(bookmarkAssets, eq(bookmarkAssets.id, bookmarks.id))
+            .where(
+              and(
+                eq(bookmarks.userId, ctx.user.id),
+                eq(bookmarks.archived, false),
+                or(
+                  like(bookmarks.title, pattern),
+                  like(bookmarkLinks.title, pattern),
+                  like(bookmarkLinks.url, pattern),
+                  like(bookmarkTexts.text, pattern),
+                  // 抓下来的正文（小页面内联在 htmlContent，大的在归档资产里）
+                  like(bookmarkLinks.htmlContent, pattern),
+                  // 图片 / PDF 收藏里提取出来的文字
+                  like(bookmarkAssets.content, pattern),
+                ),
+              ),
+            )
+            .orderBy(desc(bookmarks.createdAt))
+            .limit(limit)
+            .offset(searchOffset ?? 0);
+
+          addLogFields<"search.query">({ "search.degraded": true });
+          return {
+            hits: rows.map((r) => ({ id: r.id, score: 0 })),
+            totalHits: rows.length,
+          };
         }
         return client.search({
           query: parsedQuery.text,
@@ -1451,6 +1581,21 @@ export const bookmarksAppRouter = router({
       });
 
       if (res.numChanges > 0) {
+        // 标签变更后重建分块：Tags 是 buildEmbeddingText 的一部分，
+        // 不重建的话「刚打的标签」按标签词检索搜不到。
+        try {
+          await EmbeddingsQueue.enqueue(
+            {
+              bookmarkId: input.bookmarkId,
+              type: "embed",
+              runTaggingOnComplete: false,
+            },
+            { groupId: ctx.user.id },
+          );
+        } catch (e) {
+          console.warn(`[tags] failed to enqueue chunk rebuild: ${e}`);
+        }
+
         await Promise.allSettled([
           RuleEngine.triggerOnEvent(
             ctx.bookmark.userId,

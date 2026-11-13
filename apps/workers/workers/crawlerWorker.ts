@@ -469,20 +469,30 @@ async function runCrawler(
       probeMetadataPromise,
     });
 
-    await enqueuePostCrawlJobs(ctx, job);
-
-    // Do the archival as a separate last step as it has the potential for failure
+    // 归档必须发生在派发后置作业之前，而且失败不致命。
+    //
+    // 原实现把归档放在 enqueue 之后：一旦归档抛错，整个 job 会重试，而
+    // embed/tag/summarize/webhook 这些后置作业没有幂等键 —— 结果是重复的
+    // AI 推断与重复的 webhook 投递。归档本身只是「锦上添花」，不值得毁掉
+    // 一条已经成功抓取的收藏。
     if (
       !precrawledArchiveAssetId &&
       (serverConfig.crawler.fullPageArchive || archiveFullPage)
     ) {
-      await storeFullPageArchive(
-        ctx,
-        page.htmlContent,
-        page.url,
-        oldFullPageArchiveAssetId,
+      const { error: archiveError } = await tryCatch(
+        storeFullPageArchive(
+          ctx,
+          page.htmlContent,
+          page.url,
+          oldFullPageArchiveAssetId,
+        ),
       );
+      if (archiveError) {
+        log.warn(`Failed to store full page archive: ${archiveError}`);
+      }
     }
+
+    await enqueuePostCrawlJobs(ctx, job);
   }
 
   // Record the latency from bookmark creation to crawl completion.
@@ -1777,24 +1787,16 @@ async function enqueuePostCrawlJobs(
 
   // Enqueue openai job (if not set, assume it's true for backward compatibility)
   if (job.data.runInference !== false) {
-    if (serverConfig.embedding.enableAutoIndexing) {
-      await EmbeddingsQueue.enqueue(
-        {
-          bookmarkId,
-          type: "embed",
-          runTaggingOnComplete: true,
-        },
-        enqueueOpts,
-      );
-    } else {
-      await OpenAIQueue.enqueue(
-        {
-          bookmarkId,
-          type: "tag",
-        },
-        enqueueOpts,
-      );
-    }
+    // 与 bookmarks.ts 一致：分块不依赖 embedding provider 是否配置。
+    // worker 在无 client 时会先落块再返回，并自行按需触发 tagging。
+    await EmbeddingsQueue.enqueue(
+      {
+        bookmarkId,
+        type: "embed",
+        runTaggingOnComplete: true,
+      },
+      enqueueOpts,
+    );
     await OpenAIQueue.enqueue(
       {
         bookmarkId,
@@ -1959,12 +1961,29 @@ function decodeDataUriImage(ctx: CrawlContext, url: string) {
   return { image: asset, contentType };
 }
 
+/**
+ * 带防盗链的资源（微信公众号图、小红书图）在缺少 Referer 时常常返回 403
+ * 或占位图。用收藏页面的 origin 作为 Referer：既满足站点校验，也不会把
+ * 具体文章路径泄露给第三方 CDN。
+ */
+export function getAssetReferer(pageUrl: string): string | undefined {
+  try {
+    const { origin } = new URL(pageUrl);
+    if (!origin || origin === "null") return undefined;
+    return `${origin}/`;
+  } catch {
+    return undefined;
+  }
+}
+
 async function fetchAsset(ctx: CrawlContext, url: string, fileType: string) {
   ctx.log.info(`Downloading ${fileType} from "${truncateUrl(url)}"`);
+  const referer = getAssetReferer(ctx.url);
   const response = await fetchWithProxy(
     url,
     {
       signal: ctx.abortSignal,
+      ...(referer ? { headers: { referer } } : {}),
     },
     ctx.runProxy,
   );

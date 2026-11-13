@@ -78,7 +78,7 @@ export function DeleteAccount() {
       }
 
       toast({
-        description: "Failed to delete account. Please try again.",
+        description: "删除失败，请重试。",
         variant: "destructive",
       });
     },
@@ -99,30 +99,29 @@ export function DeleteAccount() {
   };
 
   return (
-    <SettingsSection title="Danger Zone" variant="danger">
+    <SettingsSection title="危险区域" variant="danger">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Delete Account</h3>
+        <h3 className="text-lg font-medium">删除账号</h3>
         <p className="text-sm text-muted-foreground">
-          Permanently delete your account and all associated data. This action
-          cannot be undone.
+          永久删除你的账号与所有关联数据。此操作不可撤销。
         </p>
       </div>
 
       <ActionConfirmingDialog
         open={isDialogOpen}
         setOpen={handleDialogOpenChange}
-        title="Delete Account"
+        title="删除账号"
         description={
           <div className="space-y-4">
             <div className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
               <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
               <div className="space-y-2">
                 <p className="font-medium text-destructive">
-                  This action is irreversible
+                  这个操作不可撤销
                 </p>
                 <p className="text-sm text-muted-foreground">
                   All your bookmarks, lists, tags, highlights, and other data
-                  will be permanently deleted. This cannot be undone.
+                  将被永久删除，且无法恢复。
                 </p>
               </div>
             </div>
@@ -145,13 +144,13 @@ export function DeleteAccount() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Enter your password to confirm deletion
+                          输入密码以确认删除
                         </FormLabel>
                         <div className="relative">
                           <FormControl>
                             <Input
                               type={showPassword ? "text" : "password"}
-                              placeholder="Enter your password"
+                              placeholder="输入密码"
                               className="pr-10"
                               {...field}
                             />
@@ -186,13 +185,13 @@ export function DeleteAccount() {
             onClick={form.handleSubmit(onSubmit)}
           >
             <Trash2 className="h-4 w-4" />
-            Delete Account
+            删除账号
           </ActionButton>
         )}
       >
         <Button variant="destructiveOutline">
           <Trash2 className="h-4 w-4" />
-          Delete Account
+          删除账号
         </Button>
       </ActionConfirmingDialog>
     </SettingsSection>

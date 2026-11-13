@@ -25,6 +25,10 @@ import logger from "@karakeep/shared/logger";
 import metascraperAmazonImproved from "../metascraper-plugins/metascraper-amazon-improved";
 import metascraperReddit from "../metascraper-plugins/metascraper-reddit";
 import metascraperSafeFavicon from "../metascraper-plugins/metascraper-safe-favicon";
+import metascraperWechat from "../metascraper-plugins/metascraper-wechat";
+import metascraperBilibili from "../metascraper-plugins/metascraper-bilibili";
+import metascraperZhihu from "../metascraper-plugins/metascraper-zhihu";
+import metascraperXiaohongshu from "../metascraper-plugins/metascraper-xiaohongshu";
 import { getRandomProxy } from "../network";
 import {
   parseSubprocessErrorSchema,
@@ -61,6 +65,10 @@ const metascraperParser = metascraper([
     },
   }),
   metascraperReddit(),
+  metascraperWechat(),
+  metascraperBilibili(),
+  metascraperZhihu(),
+  metascraperXiaohongshu(),
   metascraperAuthor(),
   metascraperPublisher(),
   metascraperTitle(),

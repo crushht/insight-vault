@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Karakeep",
-  "description": "An extension to bookmark links to karakeep.com",
-  "version": "1.2.14",
+  "name": "灵感仓",
+  "description": "把当前页面、选中文字或图片一键收进你的灵感仓",
+  "version": "1.3.0",
   "icons": {
     "16": "public/logo-16.png",
     "48": "public/logo-48.png",
@@ -30,7 +30,9 @@
   },
   "background": {
     "service_worker": "src/background/background.ts",
-    "scripts": ["src/background/background.ts"]
+    "scripts": [
+      "src/background/background.ts"
+    ]
   },
   "options_ui": {
     "page": "index.html#options",
@@ -44,20 +46,36 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
-  "permissions": ["storage", "tabs", "contextMenus", "activeTab", "scripting"],
-  "optional_host_permissions": ["<all_urls>"],
+  "permissions": [
+    "storage",
+    "tabs",
+    "contextMenus",
+    "activeTab",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://karakeep.invalid/*"],
-      "js": ["src/content-scripts/singlefile-content-script.ts"],
+      "matches": [
+        "https://karakeep.invalid/*"
+      ],
+      "js": [
+        "src/content-scripts/singlefile-content-script.ts"
+      ],
       "run_at": "document_idle",
       "all_frames": false
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["assets/*.js"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "assets/*.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "commands": {
@@ -65,7 +83,7 @@
       "suggested_key": {
         "default": "Ctrl+Shift+E"
       },
-      "description": "Send the current page URL to Karakeep."
+      "description": "把当前页面发送到灵感仓。"
     }
   }
 }

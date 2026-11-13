@@ -20,6 +20,17 @@ const nextConfig = {
       test: /\.svg$/,
       use: ["@svgr/webpack"],
     });
+    // 不监视数据目录：SQLite 的 -wal/-shm 与日志是高频写入的文件，
+    // 一旦被 dev watcher 看到就会反复触发重新编译（表现为页面不停闪烁）。
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: [
+        "**/node_modules/**",
+        "**/.git/**",
+        "**/.data/**",
+        "**/.next/**",
+      ],
+    };
     return config;
   },
   async headers() {

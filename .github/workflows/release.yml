@@ -1,0 +1,97 @@
+name: Release
+
+# 打一个 tag（如 v1.0.0）就会：
+#   1. 构建 Docker 镜像并推到 GitHub Container Registry（ghcr.io）
+#   2. 生成一个 GitHub Release，附上「一键部署」用的 compose 文件
+#
+# 用户拿到的东西（不需要我们部署服务器）：
+#   docker compose up -d
+# 就能在自己的机器 / VPS 上跑起来。
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  image:
+    name: Build & push image
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive image name
+        id: img
+        run: |
+          # ghcr.io/<owner>/<repo> 全小写
+          echo "name=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.img.outputs.name }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 灵感仓 ${{ github.ref_name }}
+          body: |
+            ## 部署方式（不需要服务器，也没有"我们的服务器"）
+
+            ```bash
+            # 1. 下载 docker-compose.yml 和 .env.sample
+            #    （就在本 Release 的附件里）
+            # 2. 复制成 .env，填 DATA_DIR 与 NEXTAUTH_SECRET
+            # 3. 起来
+            docker compose up -d
+            ```
+
+            打开 http://localhost:3000 ，第一个注册的账号自动是管理员。
+
+            ### AI 模型
+            本产品不内置模型。启动后到「设置 → AI」里填自己的
+            Base URL / API Key / 模型名（支持 OpenAI 兼容、Anthropic 兼容、本地 Ollama），
+            保存即生效。
+
+            ### 镜像
+            `${{ steps.img.outputs.name }}:${{ github.ref_name }}`
+          files: |
+            docker/docker-compose.yml
+            .env.sample
+            docs/USER_GUIDE.md
+            docs/DEPLOYMENT.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

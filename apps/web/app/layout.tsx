@@ -7,6 +7,8 @@ import "@karakeep/tailwind-config/globals.css";
 import type { Viewport } from "next";
 import React from "react";
 import Providers from "@/lib/providers";
+import { BRAND } from "@/lib/brand";
+import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import { THEME_COLORS } from "@/lib/themeColors";
 import { getUserLocalSettings } from "@/lib/userLocalSettings/userLocalSettings";
 import { getServerAuthSession } from "@/server/auth";
@@ -17,14 +19,22 @@ import { clientConfig } from "@karakeep/shared/config";
 
 const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
   fallback: ["sans-serif"],
 });
 
 export const metadata: Metadata = {
-  title: "Karakeep",
-  applicationName: "Karakeep",
-  description:
-    "The Bookmark Everything app. Hoard links, notes, and images and they will get automatically tagged AI.",
+  title: BRAND.name,
+  applicationName: BRAND.name,
+  description: BRAND.description,
+  metadataBase: new URL(BRAND.siteUrl),
+  openGraph: {
+    title: BRAND.fullName,
+    description: BRAND.description,
+    siteName: BRAND.nameZh,
+    type: "website",
+  },
   icons: {
     icon: [
       {
@@ -44,7 +54,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Karakeep",
+    title: BRAND.nameZh,
   },
   formatDetection: {
     telephone: false,
@@ -90,6 +100,7 @@ export default async function RootLayout({
             <ReactQueryDevtools initialIsOpen={false} />
           </Providers>
           <Toaster />
+          <ServiceWorkerRegistrar />
         </NuqsAdapter>
       </body>
     </html>

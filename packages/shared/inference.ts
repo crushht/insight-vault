@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
+import { loadAiConfig } from "./aiConfigStore";
 import serverConfig from "./config";
 import { createCustomFetch } from "./customFetch";
 import logger from "./logger";
@@ -131,6 +132,16 @@ export interface InferenceClient extends EmbeddingClient {
     prompt: string,
     opts: Partial<InferenceOptions>,
   ): Promise<InferenceResponse>;
+  /**
+   * 流式生成（可选能力）。
+   *
+   * 不是所有 provider 都支持；调用方必须先用 `typeof client.inferFromTextStream === "function"`
+   * 判断，不支持时回退到 `inferFromText` 再自行分块推送。
+   */
+  inferFromTextStream?(
+    prompt: string,
+    opts: Partial<InferenceOptions>,
+  ): AsyncIterable<string>;
   inferFromImage(
     prompt: string,
     contentType: string,
@@ -207,8 +218,148 @@ const buildOpenAIClient = (config: OpenAIEmbeddingConfig) =>
     ),
   });
 
+/**
+ * Anthropic 兼容客户端。
+ *
+ * 走 Anthropic 的 `/v1/messages` 协议（`x-api-key` + `anthropic-version`），
+ * 适用于 Claude 官方，以及提供 Anthropic 兼容层的服务（智谱 GLM、Kimi 等）。
+ *
+ * 说明：Anthropic 没有 embedding 接口，所以 `generateEmbeddingFromText` 直接抛错；
+ * 需要向量检索时请单独配 `EMBEDDING_*`（走 OpenAI 兼容）。
+ */
+export interface AnthropicInferenceConfig {
+  apiKey: string;
+  baseURL: string;
+  textModel: string;
+  imageModel?: string;
+  maxOutputTokens: number;
+  timeoutSec: number;
+}
+
+export class AnthropicInferenceClient implements InferenceClient {
+  constructor(private readonly config: AnthropicInferenceConfig) {}
+
+  async inferFromText(
+    prompt: string,
+    _opts: Partial<InferenceOptions>,
+  ): Promise<InferenceResponse> {
+    const url = `${this.config.baseURL.replace(/\/+$/, "")}/v1/messages`;
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () => controller.abort(),
+      Math.max(5, this.config.timeoutSec) * 1000,
+    );
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": this.config.apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: this.config.textModel,
+          max_tokens: this.config.maxOutputTokens,
+          messages: [{ role: "user", content: prompt }],
+        }),
+        signal: controller.signal,
+      });
+
+      const raw = (await res.text()) || "{}";
+      if (!res.ok) {
+        throw new Error(
+          `Anthropic ${res.status}: ${raw.slice(0, 300)}`,
+        );
+      }
+
+      const json = JSON.parse(raw) as {
+        content?: Array<{ type: string; text?: string }>;
+        usage?: { input_tokens?: number; output_tokens?: number };
+      };
+
+      const text = (json.content ?? [])
+        .filter((c) => c.type === "text" && typeof c.text === "string")
+        .map((c) => c.text)
+        .join("");
+
+      const usage = json.usage;
+      return {
+        response: text,
+        totalTokens: (usage?.input_tokens ?? 0) + (usage?.output_tokens ?? 0) || 0,
+      };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async inferFromImage(
+    _prompt: string,
+    _contentType: string,
+    _image: string,
+    _opts: Partial<InferenceOptions>,
+  ): Promise<InferenceResponse> {
+    // 图片走文本通道会丢信息，明确拒绝而不是静默降级
+    throw new Error(
+      "Anthropic 兼容模式暂不支持图片推理；请用 OpenAI 兼容作为视觉模型",
+    );
+  }
+
+  async generateEmbeddingFromText(): Promise<EmbeddingResponse> {
+    throw new Error(
+      "Anthropic 兼容模式不提供 embedding；如需向量检索，请单独配置 EMBEDDING_* （OpenAI 兼容）",
+    );
+  }
+}
+
 export class InferenceClientFactory {
   static build(): InferenceClient | null {
+    // 1) 界面里填的配置优先（保存在 ${DATA_DIR}/ai-config.json，web 与 workers 共享）
+    //    这样用户在设置页保存后立刻生效，不需要改 .env、也不需要重启。
+    const runtime = loadAiConfig();
+    if (runtime) {
+      if (runtime.provider === "openai" && runtime.apiKey) {
+        return new OpenAIInferenceClient({
+          apiKey: runtime.apiKey,
+          baseURL: runtime.baseUrl ?? serverConfig.inference.openAIBaseUrl,
+          proxyUrl: serverConfig.inference.openAIProxyUrl,
+          timeoutSec: serverConfig.inference.openAITimeoutSec,
+          serviceTier: serverConfig.inference.openAIServiceTier,
+          textModel: runtime.textModel ?? serverConfig.inference.textModel,
+          imageModel: runtime.imageModel ?? serverConfig.inference.imageModel,
+          contextLength: serverConfig.inference.contextLength,
+          maxOutputTokens: serverConfig.inference.maxOutputTokens,
+          useMaxCompletionTokens:
+            serverConfig.inference.useMaxCompletionTokens,
+          outputSchema: serverConfig.inference.outputSchema,
+          reasoningEffort: serverConfig.inference.openAIReasoningEffort,
+        });
+      }
+      if (runtime.provider === "anthropic" && runtime.apiKey) {
+        return new AnthropicInferenceClient({
+          apiKey: runtime.apiKey,
+          baseURL:
+            runtime.baseUrl ??
+            serverConfig.inference.openAIBaseUrl ??
+            "https://api.anthropic.com",
+          textModel: runtime.textModel ?? serverConfig.inference.textModel,
+          imageModel: runtime.imageModel ?? serverConfig.inference.imageModel,
+          maxOutputTokens: serverConfig.inference.maxOutputTokens,
+          timeoutSec: serverConfig.inference.openAITimeoutSec ?? 60,
+        });
+      }
+      if (runtime.provider === "ollama" && runtime.baseUrl) {
+        // Ollama 分支沿用环境变量里的模型名（界面里也可以覆盖）
+        return new OllamaInferenceClient({
+          ...serverConfig.inference,
+          ollamaBaseUrl: runtime.baseUrl,
+          textModel: runtime.textModel ?? serverConfig.inference.textModel,
+          imageModel: runtime.imageModel ?? serverConfig.inference.imageModel,
+        } as never);
+      }
+    }
+
+    // 2) 回退到 .env
     if (serverConfig.inference.openAIApiKey) {
       return OpenAIInferenceClient.fromConfig();
     }
@@ -364,6 +515,38 @@ export class OpenAIInferenceClient implements InferenceClient {
       allowEmpty: false,
     });
     return { response, totalTokens: chatCompletion.usage?.total_tokens };
+  }
+
+  async *inferFromTextStream(
+    prompt: string,
+    _opts: Partial<InferenceOptions>,
+  ): AsyncIterable<string> {
+    const optsWithDefaults: InferenceOptions = {
+      ...defaultInferenceOptions,
+      ..._opts,
+    };
+    const stream = await this.openAI.chat.completions.create(
+      {
+        messages: [{ role: "user", content: prompt }],
+        model: this.config.textModel,
+        stream: true,
+        ...(this.config.serviceTier
+          ? { service_tier: this.config.serviceTier }
+          : {}),
+        ...(this.config.useMaxCompletionTokens
+          ? { max_completion_tokens: this.config.maxOutputTokens }
+          : { max_tokens: this.config.maxOutputTokens }),
+        reasoning_effort: this.config.reasoningEffort,
+      },
+      { signal: optsWithDefaults.abortSignal },
+    );
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices?.[0]?.delta?.content;
+      if (typeof delta === "string" && delta.length > 0) {
+        yield delta;
+      }
+    }
   }
 
   async inferFromImage(

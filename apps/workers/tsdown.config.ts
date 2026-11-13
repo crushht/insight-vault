@@ -11,12 +11,15 @@ export default defineConfig({
   platform: "node",
   shims: true,
   external: [
-    // Keep native binaries external (transitive deps of bundled workspace packages)
+    // 原生模块必须留在外面（带 .node 二进制，bundle 不了）
     "better-sqlite3",
     "liteque",
   ],
   noExternal: [
-    // Bundle workspace packages (since they're not published to npm)
+    // workspace 包（没发布到 npm）
     /^@karakeep\//,
+    // 桌面版 / Docker 版要求 dist 自包含：这些是运行时一定会加载的普通依赖，
+    // 留在 external 会导致把 dist 复制到别处后 `Cannot find module`。
+    "execa",
   ],
 });

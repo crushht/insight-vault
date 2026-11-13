@@ -175,14 +175,22 @@ ARG YTDLP_VERSION=2026.10.26
 ARG YTDLP_LINUX_SHA256=767ba9dce7052aa196f8b12652f433d76de128ba168966fa84b6394d5e6c6795
 ARG YTDLP_LINUX_AARCH64_SHA256=e87e9533e89fe5889abaa21f5114dfe7756d6aa6219b83551add04d48b18e483
 ARG TARGETARCH
-RUN case ${TARGETARCH} in \
-        "amd64")  YTDLP_FILE=yt-dlp_linux;         YTDLP_SHA256=${YTDLP_LINUX_SHA256} ;; \
-        "arm64")  YTDLP_FILE=yt-dlp_linux_aarch64; YTDLP_SHA256=${YTDLP_LINUX_AARCH64_SHA256} ;; \
-        *) echo "Unsupported arch: ${TARGETARCH}" && exit 1 ;; \
-    esac \
-    && curl -fsSL https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/${YTDLP_FILE} -o /usr/local/bin/yt-dlp \
-    && echo "${YTDLP_SHA256}  /usr/local/bin/yt-dlp" | sha256sum -c - \
-    && chmod +x /usr/local/bin/yt-dlp
+# yt-dlp 用来下载视频站点的内容。默认从 GitHub Release 拉，
+# 但有些环境（比如本机）访问不了 GitHub —— 那种情况下加 --build-arg SKIP_YTDLP=1，
+# 镜像照样能建，只是「视频收藏」功能不可用。
+ARG SKIP_YTDLP=0
+RUN if [ "$SKIP_YTDLP" = "1" ]; then \
+        echo "Skipping yt-dlp (SKIP_YTDLP=1) — video downloads will be unavailable"; \
+    else \
+        case ${TARGETARCH} in \
+            "amd64")  YTDLP_FILE=yt-dlp_linux;         YTDLP_SHA256=${YTDLP_LINUX_SHA256} ;; \
+            "arm64")  YTDLP_FILE=yt-dlp_linux_aarch64; YTDLP_SHA256=${YTDLP_LINUX_AARCH64_SHA256} ;; \
+            *) echo "Unsupported arch: ${TARGETARCH}" && exit 1 ;; \
+        esac \
+        && curl -fsSL https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/${YTDLP_FILE} -o /usr/local/bin/yt-dlp \
+        && echo "${YTDLP_SHA256}  /usr/local/bin/yt-dlp" | sha256sum -c - \
+        && chmod +x /usr/local/bin/yt-dlp; \
+    fi
 
 # yt-dlp >=2025.x requires a JavaScript runtime to extract YouTube formats.
 # Deno is yt-dlp's default but is not present in this image. Node is the

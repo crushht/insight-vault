@@ -60,6 +60,7 @@ import {
 import { zUpdateUserSettingsSchema } from "@karakeep/shared/types/users";
 
 import { SettingsPage, SettingsSection } from "./SettingsPage";
+import { AiModelForm } from "./AiModelForm";
 
 export function AIPreferences() {
   const { t } = useTranslation();
@@ -99,7 +100,7 @@ export function AIPreferences() {
   };
 
   return (
-    <SettingsSection title="AI preferences">
+    <SettingsSection title={t("settings.ai.preferences")}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup className="gap-3">
           <Controller
@@ -128,7 +129,7 @@ export function AIPreferences() {
                     )
                   }
                   aria-invalid={fieldState.invalid}
-                  placeholder={`Default (${clientConfig.inference.inferredTagLang})`}
+                  placeholder={`默认（${clientConfig.inference.inferredTagLang}）`}
                   type="text"
                 />
                 {fieldState.invalid && (
@@ -431,7 +432,7 @@ export function CuratedTagsSelector() {
     >
       <TagsEditor
         tags={selectedTags}
-        placeholder="Select curated tags..."
+        placeholder="选择已筛选的标签…"
         onAttach={(tag) => {
           const tagId = tag.tagId;
           if (tagId) {
@@ -495,7 +496,7 @@ export function PromptEditor() {
               <FormItem className="flex-1">
                 <FormControl>
                   <Input
-                    placeholder="Add a custom prompt"
+                    placeholder="添加自定义提示词"
                     type="text"
                     {...field}
                   />
@@ -518,7 +519,7 @@ export function PromptEditor() {
                     defaultValue={field.value}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Applies To" />
+                      <SelectValue placeholder="适用范围" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -621,7 +622,7 @@ export function PromptRow({ prompt }: { prompt: ZPrompt }) {
               <FormItem className="flex-1">
                 <FormControl>
                   <Input
-                    placeholder="Add a custom prompt"
+                    placeholder="添加自定义提示词"
                     type="text"
                     {...field}
                   />
@@ -644,7 +645,7 @@ export function PromptRow({ prompt }: { prompt: ZPrompt }) {
                     defaultValue={field.value}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Applies To" />
+                      <SelectValue placeholder="适用范围" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -876,11 +877,48 @@ export default function AISettings() {
   const { t } = useTranslation();
   return (
     <SettingsPage title={t("settings.ai.ai_settings")}>
+      <ModelStatusCard />
+      <AiModelForm />
+
       <AIPreferences />
       <TagStyleSelector />
       <CuratedTagsSelector />
       <TaggingRules />
       <PromptDemo />
     </SettingsPage>
+  );
+}
+
+function ModelStatusCard() {
+  const clientConfig = useClientConfig();
+  return (
+    <SettingsSection title="模型接入状态">
+      <div className="space-y-2 text-sm">
+        {clientConfig.inference.isConfigured ? (
+          <>
+            <p className="text-foreground">已配置 provider，AI 功能可用。</p>
+          </>
+        ) : (
+          <>
+            <p className="text-destructive">
+              尚未配置模型 —— AI 功能（标签 / 摘要 / 对话 / 专题 / 创作）不会真正运行。
+            </p>
+            <p className="text-muted-foreground">
+              本产品不内置模型。在仓库根目录的
+              <code className="mx-1 rounded bg-surface-sunken px-1">.env</code>
+              里填{" "}
+              <code className="rounded bg-surface-sunken px-1">OPENAI_API_KEY</code> +{" "}
+              <code className="mx-1 rounded bg-surface-sunken px-1">OPENAI_BASE_URL</code> +{" "}
+              <code className="rounded bg-surface-sunken px-1">INFERENCE_TEXT_MODEL</code>，
+              或配 <code className="rounded bg-surface-sunken px-1">OLLAMA_BASE_URL</code>{" "}
+              用本地模型，然后重启 web 与 workers。
+            </p>
+            <p className="text-muted-foreground">
+              没有 Key 也能用：收藏、搜索、图谱、专题草稿、创作骨架都正常。
+            </p>
+          </>
+        )}
+      </div>
+    </SettingsSection>
   );
 }

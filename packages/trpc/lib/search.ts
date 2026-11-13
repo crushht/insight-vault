@@ -21,6 +21,8 @@ import {
 } from "drizzle-orm";
 
 import {
+  AssetTypes,
+  assets,
   bookmarkAssets,
   bookmarkLinks,
   bookmarkLists,
@@ -28,6 +30,7 @@ import {
   bookmarksInLists,
   bookmarkTags,
   highlights,
+  listCollaborators,
   rssFeedImportsTable,
   rssFeedsTable,
   tagsOnBookmarks,
@@ -242,6 +245,30 @@ export async function getBookmarksConditionFromMatcher(
       const comp = matcher.inverse ? ne : eq;
       return comp(bookmarks.type, matcher.typeName);
     }
+    case "assetKind": {
+      // 图片 / PDF 是 ASSET 收藏（bookmarkAssets），视频是 LINK 收藏抓下来的视频资产
+      const sub =
+        matcher.kind === "video"
+          ? db
+              .select()
+              .from(assets)
+              .where(
+                and(
+                  eq(assets.bookmarkId, bookmarks.id),
+                  eq(assets.assetType, AssetTypes.LINK_VIDEO),
+                ),
+              )
+          : db
+              .select()
+              .from(bookmarkAssets)
+              .where(
+                and(
+                  eq(bookmarkAssets.id, bookmarks.id),
+                  eq(bookmarkAssets.assetType, matcher.kind),
+                ),
+              );
+      return matcher.inverse ? notExists(sub) : exists(sub);
+    }
     case "brokenLinks": {
       // Only applies to bookmarks of type LINK
       return exists(
@@ -299,9 +326,34 @@ export async function getBookmarkIdsFromMatcher(
   matcher: Matcher,
 ): Promise<string[]> {
   const condition = await getBookmarksConditionFromMatcher(ctx, matcher);
+
+  // 共享列表里的收藏也应当能被搜到。
+  //
+  // 此前这里只有 `userId = me`，导致「别人分享给我的收藏」在搜索里完全隐身：
+  // 明明在列表里看得到，却搜不出来。改为「自己的 OR 我参与的列表内的」。
+  const sharedLists = await ctx.db
+    .select({ listId: listCollaborators.listId })
+    .from(listCollaborators)
+    .where(eq(listCollaborators.userId, ctx.user.id));
+  const sharedListIds = sharedLists.map((r) => r.listId);
+
+  const ownership =
+    sharedListIds.length > 0
+      ? or(
+          eq(bookmarks.userId, ctx.user.id),
+          inArray(
+            bookmarks.id,
+            ctx.db
+              .select({ id: bookmarksInLists.bookmarkId })
+              .from(bookmarksInLists)
+              .where(inArray(bookmarksInLists.listId, sharedListIds)),
+          ),
+        )
+      : eq(bookmarks.userId, ctx.user.id);
+
   const results = await ctx.db
     .select({ id: bookmarks.id })
     .from(bookmarks)
-    .where(and(eq(bookmarks.userId, ctx.user.id), condition));
+    .where(and(ownership, condition));
   return results.map((r) => r.id);
 }

@@ -1,0 +1,114 @@
+{
+  "name": "@karakeep/desktop",
+  "version": "1.1.0",
+  "private": true,
+  "description": "灵感仓 INSIGHT VAULT 桌面版（Electron）",
+  "main": "main.js",
+  "author": "Insight Vault",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron .",
+    "pack": "node clean-standalone.cjs && electron-builder --win --x64",
+    "pack:mac": "node clean-standalone.cjs && electron-builder --mac",
+    "pack:linux": "node clean-standalone.cjs && electron-builder --linux"
+  },
+  "build": {
+    "appId": "app.insightvault.desktop",
+    "productName": "灵感仓",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**",
+      "migrate.cjs",
+      "clean-standalone.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/.next/standalone",
+        "to": "server",
+        "filter": [
+          "**/*",
+          "!**/.env",
+          "!**/.env.*"
+        ]
+      },
+      {
+        "from": "../web/.next/static",
+        "to": "server/apps/web/.next/static",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../web/public",
+        "to": "server/apps/web/public",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../workers/dist",
+        "to": "workers",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../../packages/db/drizzle",
+        "to": "server/packages/db/drizzle",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "migrate.cjs",
+        "to": "server/migrate.cjs"
+      },
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      },
+      {
+        "from": "../../node_modules/liteque/dist/drizzle",
+        "to": "liteque-drizzle",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "InsightVault-${version}-win-${arch}.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "灵感仓"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "artifactName": "InsightVault-${version}-mac-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "artifactName": "InsightVault-${version}-linux-${arch}.${ext}"
+    },
+    "electronVersion": "45.3.0",
+    "icon": "build/icon.png"
+  },
+  "devDependencies": {
+    "electron": "45.3.0",
+    "electron-builder": "^25.1.8"
+  }
+}

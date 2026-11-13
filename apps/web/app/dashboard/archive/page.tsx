@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import Bookmarks from "@/components/dashboard/bookmarks/Bookmarks";
 import InfoTooltip from "@/components/ui/info-tooltip";
@@ -7,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("common.archive")} | Karakeep`,
+    title: `${t("common.archive")} | ${BRAND.nameZh}`,
   };
 }
 

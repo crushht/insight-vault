@@ -86,7 +86,7 @@ export default function CheckEmailPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-center">
-            <Mail className="h-12 w-12 text-blue-600" />
+            <Mail className="h-12 w-12 text-brand-600" />
           </div>
 
           <div className="space-y-2 text-center">

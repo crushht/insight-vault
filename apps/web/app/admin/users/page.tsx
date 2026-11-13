@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import InvitesList from "@/components/admin/InvitesList";
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("admin.users_list.users_list")} | Karakeep`,
+    title: `${t("admin.users_list.users_list")} | ${BRAND.nameZh}`,
   };
 }
 

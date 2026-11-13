@@ -17,7 +17,7 @@ const enum LoginType {
 }
 
 const CONNECTION_ERROR_MESSAGE =
-  "Couldn't connect to this Karakeep server. Check the server address and your internet connection, then try again.";
+  "Couldn't connect to 灵感仓服务器. Check the server address and your internet connection, then try again.";
 
 function getLoginErrorMessage(
   error: { data?: { code?: string } | null; message: string },
@@ -54,7 +54,7 @@ export default function SignInPage() {
           navigate("/options");
         },
         onError: (e) => {
-          setError(getLoginErrorMessage(e, "Incorrect email or password."));
+          setError(getLoginErrorMessage(e, "邮箱或密码错误"));
         },
       }),
     );
@@ -68,7 +68,7 @@ export default function SignInPage() {
           navigate("/options");
         },
         onError: (e) => {
-          setError(getLoginErrorMessage(e, "That API key isn't valid."));
+          setError(getLoginErrorMessage(e, "这个 API Key 无效"));
         },
       }),
     );
@@ -102,7 +102,7 @@ export default function SignInPage() {
           <>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-sm font-medium">
-                Email
+                邮箱
               </label>
               <Input
                 id="email"
@@ -119,7 +119,7 @@ export default function SignInPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="password" className="text-sm font-medium">
-                Password
+                密码
               </label>
               <Input
                 id="password"
@@ -136,14 +136,14 @@ export default function SignInPage() {
         ) : (
           <div className="flex flex-col gap-1.5">
             <label htmlFor="apiKey" className="text-sm font-medium">
-              API key
+              API Key
             </label>
             <Input
               id="apiKey"
               name="apiKey"
               type="password"
               autoComplete="off"
-              placeholder="Paste your key"
+              placeholder="粘贴你的 API Key"
               autoFocus
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
@@ -155,7 +155,7 @@ export default function SignInPage() {
 
         <Button type="submit" disabled={isPending} className="mt-1 gap-2">
           {isPending && <Spinner className="size-4" />}
-          {isPending ? "Signing in…" : "Sign in"}
+          {isPending ? "登录中…" : "登录"}
         </Button>
       </form>
 
@@ -164,7 +164,7 @@ export default function SignInPage() {
           type="button"
           onClick={() => navigate("/server")}
           className="flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 hover:bg-accent hover:text-foreground"
-          title="Change server"
+          title="切换服务器"
         >
           <Server className="size-3.5 shrink-0" />
           <span className="truncate">
@@ -184,18 +184,18 @@ export default function SignInPage() {
           className="underline-offset-4 hover:text-foreground hover:underline"
         >
           {loginType === LoginType.Password
-            ? "Use an API key instead"
-            : "Use your password instead"}
+            ? "改用 API Key 登录"
+            : "改用邮箱 + 密码"}
         </button>
         <span>
-          New to Karakeep?{" "}
+          还没有灵感仓账号？{" "}
           <a
             href={`${settings.address}/signup`}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
-            Create account
+            去注册
           </a>
         </span>
       </div>

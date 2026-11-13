@@ -1,3 +1,4 @@
+import { useTranslation } from "@/lib/i18n/client";
 import { useEffect } from "react";
 import { ActionButton } from "@/components/ui/action-button";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export default function ResetPasswordDialog({
   setOpen: onOpenChange,
   onCloseAutoFocus,
 }: ResetPasswordDialogProps) {
+  const { t } = useTranslation();
   const api = useTRPC();
   const form = useForm<ResetPasswordSchema>({
     resolver: zodResolver(resetPasswordSchema),
@@ -87,7 +89,7 @@ export default function ResetPasswordDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
-          <DialogTitle>Reset Password</DialogTitle>
+          <DialogTitle>{t("admin.reset_password.title")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((val) => mutate(val))}>
@@ -97,7 +99,7 @@ export default function ResetPasswordDialog({
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>{t("admin.reset_password.new_password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -115,7 +117,7 @@ export default function ResetPasswordDialog({
                 name="newPasswordConfirm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormLabel>{t("admin.reset_password.confirm_new_password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"

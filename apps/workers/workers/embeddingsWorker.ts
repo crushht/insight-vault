@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 
 import type { ZEmbeddingsRequest } from "@karakeep/shared-server";
 import { db } from "@karakeep/db";
-import { bookmarks } from "@karakeep/db/schema";
+import { bookmarkChunks, bookmarks , highlights } from "@karakeep/db/schema";
 import {
   addLogFields,
   EmbeddingsQueue,
@@ -10,6 +10,7 @@ import {
   zEmbeddingsRequestSchema,
 } from "@karakeep/shared-server";
 import serverConfig from "@karakeep/shared/config";
+import { buildChunkRecords } from "@karakeep/shared/chunking";
 import { EmbeddingClientFactory } from "@karakeep/shared/inference";
 import logger from "@karakeep/shared/logger";
 import {
@@ -254,6 +255,74 @@ function contentBudget(maxTextLength: number) {
   );
 }
 
+
+/**
+ * 把收藏正文切成块并写入 `bookmarkChunks`（P5 / RAG 前置）。
+ *
+ * 说明：
+ * - 嵌入本身仍然走「整篇 + 向量库」的旧路径，这里先把块落库，
+ *   让检索侧与引用侧可以先接入；
+ * - 采用「先删后插」的覆盖式写入，配合 (bookmarkId, ordinal) 唯一索引，
+ *   重复执行不会产生重复块；
+ * - 失败不影响嵌入主流程（只记 warn），下一次重跑会重新写入。
+ */
+/**
+ * 组合「用于切块的文本」：正文 + 用户高亮。
+ *
+ * 高亮是用户主动标注的重点，如果只切正文，AI 永远读不到它们。
+ */
+async function buildChunkSourceText(
+  bookmark: NonNullable<Awaited<ReturnType<typeof fetchBookmark>>>,
+): Promise<string> {
+  const base = (await buildEmbeddingText(bookmark)) ?? "";
+  try {
+    const rows = await db
+      .select({ text: highlights.text })
+      .from(highlights)
+      .where(eq(highlights.bookmarkId, bookmark.id));
+    if (rows.length === 0) {
+      return base;
+    }
+    const hl = rows
+      .map((r) => r.text?.trim())
+      .filter((x): x is string => !!x)
+      .map((x) => `- ${x}`)
+      .join("\n");
+    return hl ? `${base}\n\nHighlights:\n${hl}` : base;
+  } catch (e) {
+    logger.warn(`[embeddings] failed to load highlights for ${bookmark.id}: ${e}`);
+    return base;
+  }
+}
+
+async function persistBookmarkChunks(
+  bookmarkId: string,
+  userId: string,
+  text: string,
+  model: string,
+) {
+  const records = buildChunkRecords(text, { maxTokens: 800 });
+  await db.delete(bookmarkChunks).where(eq(bookmarkChunks.bookmarkId, bookmarkId));
+  if (records.length === 0) {
+    return;
+  }
+  await db.insert(bookmarkChunks).values(
+    records.map((r) => ({
+      id: crypto.randomUUID(),
+      bookmarkId,
+      userId,
+      ordinal: r.ordinal,
+      text: r.text,
+      tokenCount: r.tokenEstimate,
+      startOffset: r.startOffset,
+      endOffset: r.endOffset,
+      contentHash: r.contentHash,
+      embeddingModel: model,
+      embeddingStatus: "pending" as const,
+    })),
+  );
+}
+
 async function buildEmbeddingText(
   bookmark: NonNullable<Awaited<ReturnType<typeof fetchBookmark>>>,
 ): Promise<string | null> {
@@ -355,6 +424,25 @@ async function runEmbeddings(job: DequeuedJob<ZEmbeddingsRequest>) {
     "embedding.mode": data.type,
   });
 
+  // 分块落库与向量库无关：即使没有配置向量库，也要把块写下来供关键词检索与引用使用。
+  // 这段必须排在下面的向量库检查之前 —— 否则「没有向量库」会让文字笔记永远没有 chunk。
+  if (data.type === "embed") {
+    try {
+      const bm = await fetchBookmark(bookmarkId);
+      if (bm) {
+        const textForChunks = await buildChunkSourceText(bm);
+        await persistBookmarkChunks(
+          bookmarkId,
+          bm.userId,
+          textForChunks,
+          serverConfig.embedding.textModel,
+        );
+      }
+    } catch (e) {
+      logger.warn(`[embeddings] failed to persist chunks for ${bookmarkId}: ${e}`);
+    }
+  }
+
   const vectorStoreClient = await getVectorStoreClient();
   if (!vectorStoreClient) {
     logger.debug(
@@ -415,11 +503,25 @@ async function runEmbed(
   }
 
   const bookmark = await fetchBookmark(bookmarkId);
+
   if (!bookmark) {
     logger.warn(
       `[embeddings][${jobId}] Bookmark ${bookmarkId} not found, it might have been deleted already. Skipping ...`,
     );
     return;
+  }
+
+  // 分块落库先于嵌入：即使嵌入失败，块本身也留着供后续重建与引用。
+  try {
+    const textForChunks = await buildChunkSourceText(bookmark);
+    await persistBookmarkChunks(
+      bookmarkId,
+      bookmark.userId,
+      textForChunks,
+      serverConfig.embedding.textModel,
+    );
+  } catch (e) {
+    logger.warn(`[embeddings] failed to persist chunks for ${bookmarkId}: ${e}`);
   }
 
   addLogFields<"embeddingsWorker.run">({

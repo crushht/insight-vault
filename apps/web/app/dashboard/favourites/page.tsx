@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import Bookmarks from "@/components/dashboard/bookmarks/Bookmarks";
 import { useTranslation } from "@/lib/i18n/server";
@@ -6,7 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("lists.favourites")} | Karakeep`,
+    title: `${t("lists.favourites")} | ${BRAND.nameZh}`,
   };
 }
 

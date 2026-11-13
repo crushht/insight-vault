@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionButton } from "@/components/ui/action-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { resetPassword } from "@/lib/auth/client";
+import { useTranslation } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -28,30 +29,35 @@ import { z } from "zod";
 
 import { zResetPasswordSchema } from "@karakeep/shared/types/users";
 
-const resetPasswordSchema = z
-  .object({
-    confirmPassword: z.string(),
-  })
-  .extend(zResetPasswordSchema.pick({ newPassword: true }).shape)
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
 interface ResetPasswordFormProps {
   token: string;
 }
 
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+  const { t } = useTranslation();
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof resetPasswordSchema>>({
-    resolver: zodResolver(resetPasswordSchema),
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          confirmPassword: z.string(),
+        })
+        .extend(zResetPasswordSchema.pick({ newPassword: true }).shape)
+        .refine((data) => data.newPassword === data.confirmPassword, {
+          message: t("auth.passwords_dont_match"),
+          path: ["confirmPassword"],
+        }),
+    [t],
+  );
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (values: z.infer<typeof resetPasswordSchema>) => {
+  const onSubmit = async (values: z.infer<typeof schema>) => {
     setErrorMessage("");
     const result = await resetPassword({
       token,
@@ -60,8 +66,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     if (!result.ok) {
       setErrorMessage(
         result.code === "INVALID_TOKEN"
-          ? "Invalid or expired reset token"
-          : (result.error ?? "An unexpected error occurred. Please try again."),
+          ? t("auth.invalid_token")
+          : (result.error ?? t("auth.unexpected_error")),
       );
       return;
     }
@@ -70,34 +76,32 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   return (
     <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">
-          {isSuccess ? "Password reset successful" : "Reset your password"}
+      <CardHeader className="space-y-1.5 text-center">
+        <CardTitle className="font-display text-h3 font-semibold tracking-tight">
+          {isSuccess ? t("auth.reset_success_title") : t("auth.reset_title")}
         </CardTitle>
         <CardDescription>
-          {isSuccess
-            ? "Your password has been successfully reset. You can now sign in with your new password."
-            : "Enter your new password below."}
+          {isSuccess ? t("auth.reset_success_desc") : t("auth.reset_desc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {isSuccess ? (
           <>
             <div className="flex items-center justify-center">
-              <CheckCircle className="h-12 w-12 text-green-600" />
+              <CheckCircle className="h-12 w-12 text-success" />
             </div>
             <Alert>
               <AlertDescription className="text-center">
-                Your password has been successfully reset. You can now sign in
-                with your new password.
+                {t("auth.reset_success_desc")}
               </AlertDescription>
             </Alert>
             <ActionButton
               loading={false}
               onClick={() => router.push("/signin")}
               className="w-full"
+              data-testid="reset-go-signin"
             >
-              Go to Sign In
+              {t("auth.go_to_sign_in")}
             </ActionButton>
           </>
         ) : (
@@ -121,11 +125,12 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                   name="newPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Password</FormLabel>
+                      <FormLabel>{t("auth.new_password")}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Enter your new password"
+                          placeholder={t("auth.new_password_placeholder")}
+                          data-testid="reset-new-password"
                           {...field}
                         />
                       </FormControl>
@@ -139,11 +144,14 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm New Password</FormLabel>
+                      <FormLabel>{t("auth.confirm_new_password")}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Confirm your new password"
+                          placeholder={t(
+                            "auth.confirm_new_password_placeholder",
+                          )}
+                          data-testid="reset-confirm-password"
                           {...field}
                         />
                       </FormControl>
@@ -156,8 +164,9 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                   type="submit"
                   loading={form.formState.isSubmitting}
                   className="w-full"
+                  data-testid="reset-submit"
                 >
-                  Reset Password
+                  {t("auth.reset_submit")}
                 </ActionButton>
               </form>
             </Form>
@@ -169,7 +178,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 onClick={() => router.push("/signin")}
                 className="w-full"
               >
-                Back to Sign In
+                {t("auth.back_to_sign_in")}
               </ActionButton>
             </div>
           </>

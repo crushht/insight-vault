@@ -194,7 +194,7 @@ export function ManageCollaboratorsModal({
             {readOnly
               ? t("lists.collaborators.collaborators")
               : t("lists.collaborators.manage")}
-            <Badge className="bg-green-600 text-white hover:bg-green-600/80">
+            <Badge className="bg-success text-white hover:bg-success/80">
               Beta
             </Badge>
           </DialogTitle>

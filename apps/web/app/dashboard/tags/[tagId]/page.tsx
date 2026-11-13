@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Bookmarks from "@/components/dashboard/bookmarks/Bookmarks";
@@ -12,7 +13,7 @@ export async function generateMetadata(props: {
   try {
     const tag = await api.tags.get({ tagId: params.tagId });
     return {
-      title: `${tag.name} | Karakeep`,
+      title: `${tag.name} | ${BRAND.nameZh}`,
     };
   } catch (e) {
     if (e instanceof TRPCError && e.code === "NOT_FOUND") {

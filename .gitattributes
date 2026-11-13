@@ -1,0 +1,27 @@
+# 统一换行：仓库内一律 LF，Windows 脚本保持 CRLF
+* text=auto eol=lf
+
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+*.sh    text eol=lf
+
+# 二进制，别做文本 diff
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.icns  binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.db    binary
+*.zip   binary
+*.exe   binary
+
+# 锁文件与生成物
+pnpm-lock.yaml      text eol=lf linguist-generated=true
+packages/db/drizzle/** linguist-generated=true
+apps/web/lib/i18n/locales/** linguist-generated=false

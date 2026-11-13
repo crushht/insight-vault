@@ -9,7 +9,7 @@ export default function BookmarkDeletedPage() {
       <div className="flex flex-col gap-1">
         <p className="text-base font-semibold">Bookmark deleted</p>
         <p className="text-sm text-muted-foreground">
-          This page was removed from your Karakeep.
+          This page was 已从你的灵感仓中移除.
         </p>
       </div>
     </div>

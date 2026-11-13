@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import NoBookmarksBanner from "@/components/dashboard/bookmarks/NoBookmarksBanner";
@@ -15,12 +16,12 @@ export async function generateMetadata(props: {
       listId: params.listId,
     });
     return {
-      title: `${resp.name} by ${resp.ownerName} - Karakeep`,
+      title: `${resp.name} by ${resp.ownerName} - ${BRAND.nameZh}`,
       description:
         resp.description && resp.description.length > 0
-          ? `${resp.description} by ${resp.ownerName} on Karakeep`
+          ? `${resp.description} by ${resp.ownerName} on ${BRAND.nameZh}`
           : undefined,
-      applicationName: "Karakeep",
+      applicationName: BRAND.name,
       authors: [
         {
           name: resp.ownerName,
@@ -33,7 +34,7 @@ export async function generateMetadata(props: {
     }
   }
   return {
-    title: "Karakeep",
+    title: BRAND.name,
   };
 }
 

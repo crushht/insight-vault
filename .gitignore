@@ -43,6 +43,8 @@ yarn-error.log*
 
 # The sqlite database
 **/*.db
+**/*.db-shm
+**/*.db-wal
 data
 
 # PWA Files
@@ -52,6 +54,8 @@ data
 **/public/sw.js.map
 **/public/workbox-*.js.map
 **/public/worker-*.js.map
+# 手写的离线 Service Worker 要入库（上面的规则是给 next-pwa 生成的产物用的）
+!apps/web/public/sw.js
 
 # Turbo
 .turbo
@@ -73,3 +77,14 @@ auth_failures.log
 .codex
 .claude/worktrees
 jean.json
+
+# 桌面版（Electron）
+# 出包产物（147MB 安装包）绝不入库
+apps/desktop/release/
+# 出包要用的图标：上面的 `build` 规则会连目录一起忽略，这里放回来
+!apps/desktop/build/
+!apps/desktop/build/icon.png
+
+# dev.ps1 的默认数据目录（SQLite + 日志），绝不入库
+.data/
+

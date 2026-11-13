@@ -194,7 +194,7 @@ export function ActionBuilder({ value, onChange }: ActionBuilderProps) {
                   onClick={() => handleRemoveAction(index)}
                   className="h-7 w-7 p-0 has-[>svg]:px-0"
                 >
-                  <Trash2 className="h-4 w-4 text-red-500" />
+                  <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
             </CardContent>

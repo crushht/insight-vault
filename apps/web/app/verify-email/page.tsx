@@ -14,6 +14,7 @@ import {
 import { sendVerificationEmail, verifyEmail } from "@/lib/auth/client";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
+import { VerifyEmailByCode } from "@/components/auth/VerifyEmailByCode";
 
 import {
   isMobileAppRedirect,
@@ -123,16 +124,17 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <VerifyEmailByCode />
           {status === "loading" && (
             <div className="flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
             </div>
           )}
 
           {status === "success" && (
             <>
               <div className="flex items-center justify-center">
-                <CheckCircle className="h-12 w-12 text-green-600" />
+                <CheckCircle className="h-12 w-12 text-success" />
               </div>
               <Alert>
                 <AlertDescription className="text-center">
@@ -148,7 +150,7 @@ export default function VerifyEmailPage() {
           {status === "error" && (
             <>
               <div className="flex items-center justify-center">
-                <XCircle className="h-12 w-12 text-red-600" />
+                <XCircle className="h-12 w-12 text-destructive" />
               </div>
               <Alert variant="destructive">
                 <AlertDescription className="text-center">

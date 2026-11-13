@@ -180,6 +180,17 @@ MATCHER.setPattern(
               text: "",
               matcher: { type: "brokenLinks", brokenLinks: !minus },
             };
+          case "image":
+          case "pdf":
+          case "video":
+            return {
+              text: "",
+              matcher: {
+                type: "assetKind",
+                kind: ident.text as "image" | "pdf" | "video",
+                inverse: !!minus,
+              },
+            };
           default:
             // If the token is not known, emit it as pure text
             return {

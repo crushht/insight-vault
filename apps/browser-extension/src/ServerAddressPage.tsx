@@ -103,13 +103,13 @@ export default function ServerAddressPage() {
 
       <section className="flex flex-col gap-1.5">
         <label htmlFor="address" className="text-sm font-medium">
-          Server address
+          服务器地址
         </label>
         <Input
           id="address"
           name="address"
           value={serverAddress}
-          placeholder="https://cloud.karakeep.com"
+          placeholder="http://localhost:3000"
           autoComplete="url"
           autoFocus
           onChange={(e) => {
@@ -118,8 +118,8 @@ export default function ServerAddressPage() {
           }}
         />
         <p className="text-xs text-muted-foreground">
-          Use https://cloud.karakeep.com for Karakeep Cloud, or the address of
-          your self-hosted instance.
+          填你自己的灵感仓地址，例如本机部署的 http://localhost:3000，
+          或你在服务器上部署的域名（需要带 http:// 或 https://）。
         </p>
       </section>
 

@@ -88,6 +88,17 @@ const zBrokenLinksMatcher = z.object({
   brokenLinks: z.boolean(),
 });
 
+/**
+ * 按「内容形态」过滤：图片 / PDF / 视频。
+ * 前两者是 ASSET 收藏（bookmarkAssets.assetType），
+ * 视频是 LINK 收藏抓下来的视频资产（assets.assetType = linkVideo）。
+ */
+const zAssetKindMatcher = z.object({
+  type: z.literal("assetKind"),
+  kind: z.enum(["image", "pdf", "video"]),
+  inverse: z.boolean(),
+});
+
 const zHasNotesMatcher = z.object({
   type: z.literal("hasNotes"),
   hasNotes: z.boolean(),
@@ -119,6 +130,7 @@ const zNonRecursiveMatcher = z.union([
   zTypeMatcher,
   zRssFeedNameMatcher,
   zBrokenLinksMatcher,
+  zAssetKindMatcher,
   zHasNotesMatcher,
   zHasHighlightsMatcher,
   zSourceMatcher,
@@ -146,6 +158,7 @@ export const zMatcherSchema: z.ZodType<Matcher> = z.lazy(() => {
     zTypeMatcher,
     zRssFeedNameMatcher,
     zBrokenLinksMatcher,
+    zAssetKindMatcher,
     zHasNotesMatcher,
     zHasHighlightsMatcher,
     zSourceMatcher,

@@ -223,6 +223,19 @@ function MatcherComp({ matcher }: { matcher: Matcher }) {
           </TableCell>
         </TableRow>
       );
+    case "assetKind":
+      return (
+        <TableRow>
+          <TableCell>{matcher.inverse ? "不是" : "是"}</TableCell>
+          <TableCell>
+            {match(matcher.kind, {
+              image: "图片",
+              pdf: "PDF 文件",
+              video: "视频",
+            })}
+          </TableCell>
+        </TableRow>
+      );
     case "source":
       return (
         <TableRow>

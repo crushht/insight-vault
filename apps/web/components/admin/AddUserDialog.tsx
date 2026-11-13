@@ -1,3 +1,4 @@
+import { useTranslation } from "@/lib/i18n/client";
 import { useEffect, useState } from "react";
 import { ActionButton } from "@/components/ui/action-button";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ export default function AddUserDialog({
 }: {
   children?: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   const api = useTRPC();
   const queryClient = useQueryClient();
   const [isOpen, onOpenChange] = useState(false);
@@ -93,7 +95,7 @@ export default function AddUserDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add User</DialogTitle>
+          <DialogTitle>{t("admin.add_user.title")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((val) => mutate(val))}>
@@ -103,7 +105,7 @@ export default function AddUserDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>{t("admin.add_user.name")}</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
@@ -121,7 +123,7 @@ export default function AddUserDialog({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("admin.add_user.email")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -139,7 +141,7 @@ export default function AddUserDialog({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("admin.add_user.password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -157,7 +159,7 @@ export default function AddUserDialog({
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>{t("admin.add_user.confirm_password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -175,7 +177,7 @@ export default function AddUserDialog({
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t("admin.add_user.role")}</FormLabel>
                     <FormControl>
                       <Select
                         value={field.value}
@@ -185,8 +187,8 @@ export default function AddUserDialog({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="user">{t("admin.add_user.role_user")}</SelectItem>
+                          <SelectItem value="admin">{t("admin.add_user.role_admin")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>

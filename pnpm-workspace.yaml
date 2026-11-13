@@ -34,7 +34,10 @@ allowBuilds:
   "@swc/core": true
   better-sqlite3: true
   esbuild: true
-  re2: true
+  # INSIGHT VAULT 环境适配（ADR-011）：Windows 开发机无 MSVC 工具链时 re2 无法编译。
+  # re2 仅被 url-regex-safe 作为 optional peer 使用（pnpm-lock: url-regex-safe@4.0.0(re2@1.26.1)），
+  # 缺省时该库回退到原生 RegExp，功能不受影响。需要 re2 时把它改回 true 并安装 VS Build Tools。
+  re2: false
   sharp: true
   tesseract.js: true
   # These install scripts are informational or unnecessary for our installs.
@@ -62,7 +65,8 @@ patchedDependencies:
 # Docker builds can prune packages that use one of the root patches.
 allowUnusedPatches: true
 
-minimumReleaseAgeExclude: [
+minimumReleaseAgeExclude:
+  [
     "@next/bundle-analyzer@16.4.1",
     "@next/env@16.4.1",
     "@next/swc-darwin-arm64@16.4.1",
@@ -86,6 +90,7 @@ minimumReleaseAgeExclude: [
     "@better-auth/telemetry@1.7.16",
     better-auth@1.7.16,
     better-call@1.4.5,
+    electron@45.3.0
   ]
 
 overrides:

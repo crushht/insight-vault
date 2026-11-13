@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n/client";
+import { BRAND } from "@/lib/brand";
 import { useState } from "react";
 import { ActionButton } from "@/components/ui/action-button";
 import {
@@ -39,6 +41,7 @@ interface CreateInviteDialogProps {
 export default function CreateInviteDialog({
   children,
 }: CreateInviteDialogProps) {
+  const { t } = useTranslation();
   const api = useTRPC();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -77,9 +80,9 @@ export default function CreateInviteDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Send User Invitation</DialogTitle>
+          <DialogTitle>{t("admin.create_invite.title")}</DialogTitle>
           <DialogDescription>
-            Send an invitation to a new user to join Karakeep. They&apos;ll
+            Send an invitation to a new user to join {BRAND.name}. They&apos;ll
             receive an email with instructions to create their account and will
             be assigned the &quot;user&quot; role.
           </DialogDescription>
@@ -102,7 +105,7 @@ export default function CreateInviteDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>{t("admin.create_invite.email_address")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"

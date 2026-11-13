@@ -1,8 +1,10 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import { ChangePassword } from "@/components/settings/ChangePassword";
 import { DeleteAccount } from "@/components/settings/DeleteAccount";
 import ReaderSettings from "@/components/settings/ReaderSettings";
 import { SettingsPage } from "@/components/settings/SettingsPage";
+import { SystemStatus } from "@/components/settings/SystemStatus";
 import UserAvatar from "@/components/settings/UserAvatar";
 import UserDetails from "@/components/settings/UserDetails";
 import UserOptions from "@/components/settings/UserOptions";
@@ -12,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("settings.info.user_info")} | Karakeep`,
+    title: `${t("settings.info.user_info")} | ${BRAND.nameZh}`,
   };
 }
 
@@ -26,6 +28,7 @@ export default async function InfoPage() {
       <ChangePassword />
       <UserOptions />
       <ReaderSettings />
+      <SystemStatus />
       <DeleteAccount />
     </SettingsPage>
   );

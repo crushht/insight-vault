@@ -29,7 +29,7 @@ function TagPill({ tag }: { tag: string }) {
     <div
       className={cn(
         badgeVariants({ variant: "secondary" }),
-        "text-nowrap font-light text-gray-700 hover:bg-foreground hover:text-secondary dark:text-gray-400",
+        "text-nowrap font-light text-muted-foreground hover:bg-foreground hover:text-secondary dark:text-muted-foreground/80",
       )}
       key={tag}
     >
@@ -45,7 +45,7 @@ function BookmarkCard({ bookmark }: { bookmark: ZPublicBookmark }) {
         return (
           <div className="space-y-2">
             {bookmark.bannerImageUrl && (
-              <div className="aspect-video w-full overflow-hidden rounded bg-gray-100 dark:bg-muted">
+              <div className="aspect-video w-full overflow-hidden rounded bg-surface-sunken dark:bg-muted">
                 <Link href={bookmark.content.url} target="_blank">
                   {/* oxlint-disable-next-line no-img-element */}
                   <img
@@ -108,7 +108,7 @@ function BookmarkCard({ bookmark }: { bookmark: ZPublicBookmark }) {
         return (
           <div className="space-y-2">
             {bookmark.bannerImageUrl ? (
-              <div className="aspect-video w-full overflow-hidden rounded bg-gray-100 dark:bg-muted">
+              <div className="aspect-video w-full overflow-hidden rounded bg-surface-sunken dark:bg-muted">
                 <Link href={bookmark.content.assetUrl} target="_blank">
                   {/* oxlint-disable-next-line no-img-element */}
                   <img
@@ -119,11 +119,11 @@ function BookmarkCard({ bookmark }: { bookmark: ZPublicBookmark }) {
                 </Link>
               </div>
             ) : (
-              <div className="flex aspect-video w-full items-center justify-center overflow-hidden rounded bg-gray-100 dark:bg-muted">
+              <div className="flex aspect-video w-full items-center justify-center overflow-hidden rounded bg-surface-sunken dark:bg-muted">
                 {bookmark.content.assetType === "image" ? (
-                  <ImageIcon className="h-8 w-8 text-gray-400" />
+                  <ImageIcon className="h-8 w-8 text-muted-foreground/80" />
                 ) : (
-                  <FileIcon className="h-8 w-8 text-gray-400" />
+                  <FileIcon className="h-8 w-8 text-muted-foreground/80" />
                 )}
               </div>
             )}
@@ -157,7 +157,7 @@ function BookmarkCard({ bookmark }: { bookmark: ZPublicBookmark }) {
 
         {/* Footer */}
         <div className="mt-3 flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
             {bookmark.content.type === BookmarkTypes.LINK && (
               <>
                 <FooterLinkURL url={bookmark.content.url} />
@@ -249,7 +249,7 @@ export default function PublicBookmarkGrid({
             onClick={() => fetchNextPage()}
             variant="ghost"
           >
-            Load More
+            加载更多
           </ActionButton>
         </div>
       )}

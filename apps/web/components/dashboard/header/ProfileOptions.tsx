@@ -131,7 +131,7 @@ export default function SidebarProfileOptions() {
             </div>
             <div className="flex flex-col">
               <p>{session.user.name}</p>
-              <p className="text-sm text-gray-400">{session.user.email}</p>
+              <p className="text-sm text-muted-foreground/80">{session.user.email}</p>
             </div>
           </div>
           <Separator className="my-2" />

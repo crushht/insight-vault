@@ -13,6 +13,8 @@ export const zClientConfigSchema = z.object({
     disableSignups: z.boolean(),
     disablePasswordAuth: z.boolean(),
     oauthAutoRedirect: z.boolean(),
+    // 登录保持天数（桌面版 365，网页版默认 30）
+    sessionDays: z.number().optional(),
   }),
   turnstile: z
     .object({

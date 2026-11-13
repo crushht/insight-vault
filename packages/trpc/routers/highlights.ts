@@ -10,6 +10,8 @@ import {
 } from "@karakeep/shared/types/highlights";
 import { zCursorV2 } from "@karakeep/shared/types/pagination";
 
+import { EmbeddingsQueue } from "@karakeep/shared-server";
+
 import type { AuthedContext } from "../index";
 import { createScopedAuthedProcedure, router } from "../index";
 import { actorFromContext } from "../lib/actor";
@@ -50,13 +52,34 @@ const ensureHighlightOwnership = experimental_trpcMiddleware<{
   });
 });
 
+
+/**
+ * 高亮变更后重建分块。
+ *
+ * 高亮文本会进入 chunk（见 embeddingsWorker 的 buildChunkSourceText），
+ * 所以增删改高亮都必须重建，否则 AI 会读到"已删除的高亮"或读不到"刚加的高亮"。
+ * 失败只记日志，不影响高亮本身的写入。
+ */
+async function rebuildChunksForHighlight(bookmarkId: string, userId: string) {
+  try {
+    await EmbeddingsQueue.enqueue(
+      { bookmarkId, type: "embed", runTaggingOnComplete: false },
+      { groupId: userId },
+    );
+  } catch (e) {
+    console.warn(`[highlights] failed to enqueue chunk rebuild for ${bookmarkId}: ${e}`);
+  }
+}
+
 export const highlightsAppRouter = router({
   create: highlightsProcedure
     .input(zNewHighlightSchema)
     .output(zHighlightSchema)
     .use(ensureBookmarkOwnership)
     .mutation(async ({ input, ctx }) => {
-      return await ctx.highlightsService.create(ctx.actor, input);
+      const created = await ctx.highlightsService.create(ctx.actor, input);
+      await rebuildChunksForHighlight(input.bookmarkId, ctx.user.id);
+      return created;
     }),
   getForBookmark: highlightsProcedure
     .input(z.object({ bookmarkId: z.string() }))
@@ -123,13 +146,17 @@ export const highlightsAppRouter = router({
     .output(zHighlightSchema)
     .use(ensureHighlightOwnership)
     .mutation(async ({ ctx }) => {
-      return await ctx.highlightsService.delete(ctx.highlight);
+      const res = await ctx.highlightsService.delete(ctx.highlight);
+      await rebuildChunksForHighlight(ctx.highlight.bookmarkId, ctx.user.id);
+      return res;
     }),
   update: highlightsProcedure
     .input(zUpdateHighlightSchema)
     .output(zHighlightSchema)
     .use(ensureHighlightOwnership)
     .mutation(async ({ input, ctx }) => {
-      return await ctx.highlightsService.update(ctx.highlight, input);
+      const res = await ctx.highlightsService.update(ctx.highlight, input);
+      await rebuildChunksForHighlight(ctx.highlight.bookmarkId, ctx.user.id);
+      return res;
     }),
 });

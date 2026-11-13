@@ -249,6 +249,7 @@ const SearchInput = React.forwardRef<
             <div className="relative">
               <CommandInput
                 ref={inputRef}
+                data-testid="search-input"
                 placeholder={t(SEARCH_PLACEHOLDERS[searchMode])}
                 value={value}
                 onValueChange={handleValueChange}

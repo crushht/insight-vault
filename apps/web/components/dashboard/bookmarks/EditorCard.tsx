@@ -203,6 +203,7 @@ export default function EditorCard({ className }: { className?: string }) {
         <FormItem className="flex-1">
           <FormControl>
             <Textarea
+              data-testid="bookmark-editor"
               ref={inputRef}
               disabled={isPending}
               className={cn(

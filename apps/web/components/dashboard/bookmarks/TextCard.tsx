@@ -66,7 +66,7 @@ export default function TextCard({
                   className,
                 )}
               >
-                Note
+                笔记
               </div>
             ),
           })

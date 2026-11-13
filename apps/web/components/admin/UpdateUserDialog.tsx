@@ -1,3 +1,4 @@
+import { useTranslation } from "@/lib/i18n/client";
 import { useEffect } from "react";
 import { ActionButton } from "@/components/ui/action-button";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export default function UpdateUserDialog({
   setOpen: onOpenChange,
   onCloseAutoFocus,
 }: UpdateUserDialogProps) {
+  const { t } = useTranslation();
   const api = useTRPC();
   const queryClient = useQueryClient();
   const defaultValues = {
@@ -102,7 +104,7 @@ export default function UpdateUserDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle>{t("admin.update_user.title")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((val) => mutate(val))}>
@@ -112,7 +114,7 @@ export default function UpdateUserDialog({
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t("admin.update_user.role")}</FormLabel>
                     <FormControl>
                       <Select
                         onValueChange={field.onChange}
@@ -122,8 +124,8 @@ export default function UpdateUserDialog({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="user">{t("admin.update_user.role_user")}</SelectItem>
+                          <SelectItem value="admin">{t("admin.update_user.role_admin")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -136,12 +138,12 @@ export default function UpdateUserDialog({
                 name="bookmarkQuota"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bookmark Quota</FormLabel>
+                    <FormLabel>{t("admin.update_user.bookmark_quota")}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="0"
-                        placeholder="Unlimited (leave empty)"
+                        placeholder={t("admin.update_user.unlimited")}
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) => {
@@ -159,12 +161,12 @@ export default function UpdateUserDialog({
                 name="storageQuota"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Storage Quota (bytes)</FormLabel>
+                    <FormLabel>{t("admin.update_user.storage_quota")}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="0"
-                        placeholder="Unlimited (leave empty)"
+                        placeholder={t("admin.update_user.unlimited")}
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) => {

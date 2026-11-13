@@ -1,0 +1,169 @@
+/*
+ * INSIGHT VAULT — design tokens (single source of truth)
+ * ------------------------------------------------------
+ * 规则：
+ *  1. 颜色一律用「HSL 三元组」变量，供 `hsl(var(--x))` 与 Tailwind 的透明度修饰符使用。
+ *  2. 原始品牌色用 `--iv-*` 命名；shadcn 语义变量（--background/--primary/…）从原始色派生。
+ *  3. 亮色与暗色必须同源：同一个语义名在两侧只是亮度不同，不允许变成另一种色相。
+ *  4. 组件里禁止写死颜色，只能用语义类（bg-surface / text-secondary / border-strong …）。
+ */
+
+
+:root {
+  /* ---------- brand（青墨 teal-ink） ---------- */
+  --iv-brand-50: 175 40% 94%;
+  --iv-brand-100: 173 39% 86%;
+  --iv-brand-300: 176 42% 60%;
+  --iv-brand-500: 177 76% 30%;
+  --iv-brand-600: 180 74% 24%;
+  --iv-brand-700: 180 85% 18%;
+  --iv-brand-900: 180 85% 10%;
+
+  /* ---------- accent / semantic ---------- */
+  --iv-amber-100: 39 81% 92%;
+  --iv-amber-500: 32 70% 50%;
+  --iv-ai-from: 246 92% 67%;
+  --iv-ai-to: 173 54% 40%;
+
+  --iv-success: 153 69% 28%;
+  --iv-warning: 26 90% 37%;
+  --iv-danger: 4 76% 40%;
+  --iv-info: 218 80% 46%;
+
+  /* ---------- surfaces & text ---------- */
+  --iv-surface: 60 20% 98%;
+  --iv-surface-raised: 0 0% 100%;
+  --iv-surface-sunken: 60 12% 96%;
+  --iv-border: 60 10% 89%;
+  --iv-border-strong: 60 8% 78%;
+  --iv-text: 210 11% 9%;
+  --iv-text-secondary: 210 6% 40%;
+  --iv-text-tertiary: 210 6% 55%;
+
+  /* ---------- radii ---------- */
+  --iv-radius-sm: 6px;
+  --iv-radius-md: 10px;
+  --iv-radius-lg: 14px;
+  --iv-radius-xl: 20px;
+  --iv-radius-2xl: 28px;
+
+  /* ---------- elevation ---------- */
+  --iv-shadow-e1: 0 1px 2px rgb(16 18 20 / 0.06), 0 1px 1px rgb(16 18 20 / 0.04);
+  --iv-shadow-e2: 0 8px 24px -8px rgb(16 18 20 / 0.16);
+  --iv-shadow-e3: 0 24px 64px -16px rgb(16 18 20 / 0.24);
+
+  /* ---------- typography ---------- */
+  --iv-font-sans:
+    var(--font-inter, "Inter"), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC",
+    "Hiragino Sans GB", sans-serif;
+  --iv-font-serif:
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun",
+    Georgia, "Times New Roman", serif;
+  --iv-font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* ---------- motion ---------- */
+  --iv-motion-fast: 120ms;
+  --iv-motion-base: 180ms;
+  --iv-motion-slow: 240ms;
+  --iv-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --iv-ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ================= shadcn 语义层（亮色） ================= */
+  --background: var(--iv-surface);
+  --foreground: var(--iv-text);
+
+  --panel: var(--iv-surface-sunken);
+
+  --card: var(--iv-surface-raised);
+  --card-foreground: var(--iv-text);
+
+  --popover: var(--iv-surface-raised);
+  --popover-foreground: var(--iv-text);
+
+  --primary: var(--iv-brand-600);
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 174 24% 95%;
+  --secondary-foreground: 180 55% 18%;
+
+  --muted: 60 10% 95%;
+  --muted-foreground: var(--iv-text-secondary);
+
+  --accent: 175 24% 94%;
+  --accent-foreground: 180 55% 20%;
+
+  --destructive: var(--iv-danger);
+  --destructive-foreground: 0 0% 100%;
+
+  --border: var(--iv-border);
+  --input: var(--iv-border);
+  --ring: 177 70% 32%;
+
+  --radius: 0.625rem;
+}
+
+.dark {
+  /* ---------- brand（暗色下提亮，色相不变） ---------- */
+  --iv-brand-50: 180 30% 12%;
+  --iv-brand-100: 180 30% 18%;
+  --iv-brand-300: 176 40% 45%;
+  --iv-brand-500: 176 55% 42%;
+  --iv-brand-600: 176 52% 34%;
+  --iv-brand-700: 176 50% 27%;
+  --iv-brand-900: 176 55% 14%;
+
+  --iv-amber-100: 32 40% 18%;
+  --iv-amber-500: 34 78% 58%;
+
+  --iv-success: 153 50% 45%;
+  --iv-warning: 30 80% 56%;
+  --iv-danger: 358 70% 55%;
+  --iv-info: 218 75% 62%;
+
+  --iv-surface: 210 8% 5%;
+  --iv-surface-raised: 210 8% 8.5%;
+  --iv-surface-sunken: 210 8% 4%;
+  --iv-border: 210 6% 16%;
+  --iv-border-strong: 210 6% 24%;
+  --iv-text: 210 12% 96%;
+  --iv-text-secondary: 210 6% 66%;
+  --iv-text-tertiary: 210 6% 50%;
+
+  --iv-shadow-e1: 0 1px 2px rgb(0 0 0 / 0.6);
+  --iv-shadow-e2: 0 8px 24px -8px rgb(0 0 0 / 0.8);
+  --iv-shadow-e3: 0 24px 64px -16px rgb(0 0 0 / 0.9);
+
+  /* ================= shadcn 语义层（暗色） ================= */
+  --background: var(--iv-surface);
+  --foreground: var(--iv-text);
+
+  --panel: var(--iv-surface-sunken);
+
+  --card: var(--iv-surface-raised);
+  --card-foreground: var(--iv-text);
+
+  --popover: 210 8% 9.5%;
+  --popover-foreground: var(--iv-text);
+
+  --primary: var(--iv-brand-500);
+  --primary-foreground: 180 40% 6%;
+
+  --secondary: 210 7% 13%;
+  --secondary-foreground: 210 12% 92%;
+
+  --muted: 210 6% 12%;
+  --muted-foreground: var(--iv-text-secondary);
+
+  --accent: 180 18% 14%;
+  --accent-foreground: 174 36% 84%;
+
+  --destructive: var(--iv-danger);
+  --destructive-foreground: 0 0% 98%;
+
+  --border: var(--iv-border);
+  --input: 210 6% 19%;
+  --ring: 176 55% 45%;
+}

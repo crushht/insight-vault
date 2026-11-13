@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import AllHighlights from "@/components/dashboard/highlights/AllHighlights";
 import { useTranslation } from "@/lib/i18n/server";
@@ -8,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("common.highlights")} | Karakeep`,
+    title: `${t("common.highlights")} | ${BRAND.nameZh}`,
   };
 }
 

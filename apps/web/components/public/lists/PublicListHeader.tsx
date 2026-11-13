@@ -50,7 +50,7 @@ export default function PublicListHeader({
         </div>
         {/* Options */}
         <div className="flex items-center justify-start gap-1 md:justify-end">
-          <div className="flex items-center gap-1 text-xs font-light uppercase text-gray-500 transition-colors duration-200 hover:text-gray-700 dark:hover:text-gray-300">
+          <div className="flex items-center gap-1 text-xs font-light uppercase text-muted-foreground/80 transition-colors duration-200 hover:text-muted-foreground dark:hover:text-border">
             <BookmarkIcon
               size={12}
               className="transition-transform duration-200 hover:scale-110"
@@ -62,7 +62,7 @@ export default function PublicListHeader({
             target="_blank"
             className={buttonVariants({ variant: "none", size: "icon" })}
           >
-            <RssIcon className="size-3 text-gray-500" />
+            <RssIcon className="size-3 text-muted-foreground/80" />
           </Link>
         </div>
       </div>

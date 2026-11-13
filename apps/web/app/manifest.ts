@@ -1,17 +1,35 @@
 import type { MetadataRoute } from "next";
 
+import { BRAND } from "@/lib/brand";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Karakeep",
-    short_name: "Karakeep",
-    description:
-      "The Bookmark Everything app. Hoard links, notes, and images and they will get automatically tagged AI.",
-    background_color: "#ffffff",
-    theme_color: "#ffffff",
-    start_url: "/",
+    name: `${BRAND.nameZh} · ${BRAND.name}`,
+    short_name: BRAND.nameZh,
+    description: BRAND.description,
+    // 与 tokens.css 的品牌色保持一致：暖纸白底、青墨主题色
+    background_color: "#FBFBF9",
+    theme_color: "#0B6E6E",
+    start_url: "/dashboard/bookmarks",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
+    lang: "zh-CN",
+    categories: ["productivity", "utilities"],
+    shortcuts: [
+      {
+        name: "收藏库",
+        url: "/dashboard/bookmarks",
+      },
+      {
+        name: "AI 对话",
+        url: "/dashboard/chat",
+      },
+      {
+        name: "知识图谱",
+        url: "/dashboard/graph",
+      },
+    ],
     icons: [
       {
         src: "/icons/logo-16.png",
@@ -40,21 +58,11 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "any",
       },
-    ],
-    screenshots: [
       {
-        src: "/screenshots/desktop.png",
-        sizes: "3840x2307",
+        src: "/icons/logo-512.png",
+        sizes: "512x512",
         type: "image/png",
-        form_factor: "wide",
-        label: "Karakeep desktop bookmark library",
-      },
-      {
-        src: "/screenshots/mobile.png",
-        sizes: "692x1498",
-        type: "image/png",
-        form_factor: "narrow",
-        label: "Karakeep mobile bookmark library",
+        purpose: "maskable",
       },
     ],
   };

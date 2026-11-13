@@ -1,6 +1,10 @@
 services:
   web:
-    image: ghcr.io/karakeep-app/karakeep:${KARAKEEP_VERSION:-release}
+    # 镜像：默认用 GitHub Release 里发布的那个；想本地构建就取消注释 build 段
+    image: ${IV_IMAGE:-ghcr.io/your-name/insight-vault:latest}
+    # build:
+    #   context: ..
+    #   dockerfile: docker/Dockerfile
     restart: unless-stopped
     volumes:
       # By default, the data is stored in a docker volume called "data".

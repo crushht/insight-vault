@@ -87,6 +87,8 @@ export async function signIn(
     email?: string;
     password?: string;
     callbackUrl?: string;
+    /** false = 关闭浏览器（或退出桌面版）即失效；默认 true，30 天保持登录 */
+    rememberMe?: boolean;
   } = {},
 ): Promise<AuthResult> {
   if (provider === "credentials") {
@@ -98,6 +100,7 @@ export async function signIn(
         email: options.email,
         password: options.password,
         callbackURL: options.callbackUrl,
+        rememberMe: options.rememberMe ?? true,
       }),
     );
   }
@@ -111,7 +114,77 @@ export async function signIn(
   );
 }
 
+export interface EmailCodeResult {
+  ok: boolean;
+  message?: string;
+  /** "email" = 已发到邮箱；"inline" = 本地模式，码在 code 里 */
+  delivery?: "email" | "inline";
+  code?: string;
+  expiresInMinutes?: number;
+}
+
+/**
+ * 发送邮箱验证码。
+ * purpose = "sign-up" 时只发给还没注册的邮箱（注册用），
+ * "sign-in" 用于已注册账号免密码登录。
+ */
+export async function requestEmailCode(
+  email: string,
+  purpose: "sign-in" | "sign-up",
+): Promise<EmailCodeResult> {
+  try {
+    const res = await fetch("/api/otp/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, purpose }),
+    });
+    const data = (await res.json().catch(() => ({}))) as EmailCodeResult;
+    if (!res.ok) {
+      return { ok: false, message: data.message ?? "发送失败" };
+    }
+    return { ...data, ok: true };
+  } catch {
+    return { ok: false, message: "网络异常，请重试" };
+  }
+}
+
+/**
+ * 注册：邮箱 + 密码 + 邮箱验证码。成功时服务端已经写好 session cookie，
+ * 前端直接跳转即可（不会再要求登录一次）。
+ */
+export async function registerWithCode(input: {
+  name?: string;
+  email: string;
+  password: string;
+  code: string;
+  turnstileToken?: string;
+}): Promise<AuthResult & { signInRequired?: boolean }> {
+  try {
+    const res = await fetch("/api/otp/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      message?: string;
+      signInRequired?: boolean;
+    };
+    if (!res.ok) {
+      return { ok: false, error: data.message ?? "注册失败，请稍后重试" };
+    }
+    return { ok: true, signInRequired: data.signInRequired };
+  } catch {
+    return { ok: false, error: "网络异常，请重试" };
+  }
+}
+
+
 export async function signOut(): Promise<AuthResult> {
+  // 退出时清掉 Service Worker 缓存：共用浏览器时不让下一个账号看到上一个人的页面
+  if (typeof navigator !== "undefined" && navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: "clear" });
+  }
   return toAuthResult(await authClient.signOut());
 }
 

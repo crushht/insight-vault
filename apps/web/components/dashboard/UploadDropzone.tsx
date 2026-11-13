@@ -150,19 +150,19 @@ export default function UploadDropzone({
           <input {...getInputProps()} hidden />
           <div
             className={cn(
-              "fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-gray-200 opacity-90",
+              "fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-border opacity-90",
               isDragging || numUploading > 0 ? undefined : "hidden",
             )}
           >
             {numUploading > 0 ? (
               <div className="flex items-center justify-center gap-2">
-                <p className="text-2xl font-bold text-gray-700">
+                <p className="text-2xl font-bold text-muted-foreground">
                   Uploading {numUploaded} / {numUploading}
                 </p>
                 <LoadingSpinner />
               </div>
             ) : (
-              <p className="text-2xl font-bold text-gray-700">
+              <p className="text-2xl font-bold text-muted-foreground">
                 Drop Your Image / PDF / Markdown file
               </p>
             )}

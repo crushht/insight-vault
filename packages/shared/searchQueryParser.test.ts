@@ -141,6 +141,40 @@ describe("Search Query Parser", () => {
     });
   });
 
+  test("content kind filters (image / pdf / video)", () => {
+    expect(parseSearchQuery("is:image")).toEqual({
+      result: "full",
+      text: "",
+      matcher: { type: "assetKind", kind: "image", inverse: false },
+    });
+    expect(parseSearchQuery("is:pdf")).toEqual({
+      result: "full",
+      text: "",
+      matcher: { type: "assetKind", kind: "pdf", inverse: false },
+    });
+    expect(parseSearchQuery("-is:video")).toEqual({
+      result: "full",
+      text: "",
+      matcher: { type: "assetKind", kind: "video", inverse: true },
+    });
+    // 「文章」= 链接类型但没抓下视频
+    expect(parseSearchQuery("is:link -is:video")).toEqual({
+      result: "full",
+      text: "",
+      matcher: {
+        type: "and",
+        matchers: [
+          {
+            type: "type",
+            typeName: BookmarkTypes.LINK,
+            inverse: false,
+          },
+          { type: "assetKind", kind: "video", inverse: true },
+        ],
+      },
+    });
+  });
+
   describe("has queries", () => {
     test("parses supported values", () => {
       expect(parseSearchQuery("has:notes")).toEqual({

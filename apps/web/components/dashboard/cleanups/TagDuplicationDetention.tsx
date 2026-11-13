@@ -151,7 +151,7 @@ function SuggestionRow({
                   badgeVariants({ variant: "outline" }),
                   "text-sm",
                   selected
-                    ? "border border-blue-500 dark:border-blue-900"
+                    ? "border border-brand-300 dark:border-brand-300"
                     : null,
                 )}
               >

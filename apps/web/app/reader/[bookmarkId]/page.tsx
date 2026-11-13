@@ -5,13 +5,14 @@ import { useParams, useRouter } from "next/navigation";
 import HighlightCard from "@/components/dashboard/highlights/HighlightCard";
 import ReaderSettingsPopover from "@/components/dashboard/preview/ReaderSettingsPopover";
 import ReaderView from "@/components/dashboard/preview/ReaderView";
+import { ReaderAskPanel } from "@/components/reader/ReaderAskPanel";
 import { Button } from "@/components/ui/button";
 import { FullPageSpinner } from "@/components/ui/full-page-spinner";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/lib/auth/client";
 import { useReaderSettings } from "@/lib/readerSettings";
 import { useQuery } from "@tanstack/react-query";
-import { HighlighterIcon as Highlight, Printer, X } from "lucide-react";
+import { HighlighterIcon as Highlight, Printer, Sparkles, X } from "lucide-react";
 
 import { useTRPC } from "@karakeep/shared-react/trpc";
 import { BookmarkTypes } from "@karakeep/shared/types/bookmarks";
@@ -37,6 +38,7 @@ export default function ReaderViewPage() {
   const router = useRouter();
   const { settings } = useReaderSettings();
   const [showHighlights, setShowHighlights] = useState(false);
+  const [showAsk, setShowAsk] = useState(false);
   const isOwner = session?.user?.id === bookmark?.userId;
 
   const onClose = () => {
@@ -60,7 +62,7 @@ export default function ReaderViewPage() {
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-muted-foreground">Reader View</span>
+            <span className="text-sm text-muted-foreground">阅读模式</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -69,6 +71,19 @@ export default function ReaderViewPage() {
             </Button>
 
             <ReaderSettingsPopover variant="ghost" />
+
+            <Button
+              variant={showAsk ? "default" : "ghost"}
+              size="icon"
+              onClick={() => {
+                setShowHighlights(false);
+                setShowAsk((v) => !v);
+              }}
+              aria-label="就这篇提问"
+              title="就这篇提问"
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
 
             <Button
               variant={showHighlights ? "default" : "ghost"}
@@ -120,7 +135,7 @@ export default function ReaderViewPage() {
                       <span>By {bookmark.content.author}</span>
                     )}
                     <Separator orientation="vertical" className="h-4" />
-                    <span>8 min</span>
+                    <span>约 8 分钟</span>
                   </div>
                 </header>
 
@@ -146,16 +161,29 @@ export default function ReaderViewPage() {
           </article>
         </main>
 
+        {/* 就这篇提问（与高亮侧栏互斥，避免两个右栏叠在一起） */}
+        {showAsk && (
+          <aside
+            className="fixed right-0 top-14 z-50 h-[calc(100vh-3.5rem)] w-full border-l bg-background sm:w-96 print:hidden"
+            aria-label="AI 提问"
+          >
+            <ReaderAskPanel
+              bookmarkId={bookmarkId}
+              onClose={() => setShowAsk(false)}
+            />
+          </aside>
+        )}
+
         {/* Highlights Sidebar */}
         {showHighlights && highlights && (
           <aside className="fixed right-0 top-14 z-50 h-[calc(100vh-3.5rem)] w-full border-l bg-background sm:w-80 lg:z-auto lg:bg-background/95 lg:backdrop-blur lg:supports-[backdrop-filter]:bg-background/60 print:hidden">
             <div className="flex h-full flex-col">
               <div className="border-b p-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-semibold">Highlights</h2>
+                  <h2 className="font-semibold">高亮</h2>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
-                      {highlights.highlights.length} saved
+                      {highlights.highlights.length} 条
                     </span>
                     <Button
                       variant="ghost"

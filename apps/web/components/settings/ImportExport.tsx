@@ -1,5 +1,7 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
+import { downloadText } from "@/lib/markdown-download";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -100,7 +102,7 @@ function ExportButton() {
           <Upload className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-medium">Export File</h3>
+          <h3 className="font-medium">导出文件</h3>
           <p>{t("settings.import.export_links_and_notes")}</p>
           <Select
             value={format}
@@ -110,7 +112,7 @@ function ExportButton() {
               <SelectValue placeholder="Format" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="json">JSON (Karakeep format)</SelectItem>
+              <SelectItem value="json">JSON ({BRAND.name} format)</SelectItem>
               <SelectItem value="netscape">HTML (Netscape format)</SelectItem>
             </SelectContent>
           </Select>
@@ -124,7 +126,7 @@ function ExportButton() {
           disabled={isFetching}
         >
           {isFetching && <Loader2 className="size-6 animate-spin" />}
-          <p>Export</p>
+          <p>导出</p>
         </Button>
       </CardContent>
     </Card>
@@ -141,13 +143,13 @@ export function ImportExportRow() {
       {quotaError && (
         <Alert variant="destructive" className="relative">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Import Quota Exceeded</AlertTitle>
+          <AlertTitle>超出导入配额</AlertTitle>
           <AlertDescription>{quotaError}</AlertDescription>
         </Alert>
       )}
       <div className="grid gap-4 md:grid-cols-2">
         <ImportCard
-          text="HTML File"
+          text="HTML 书签文件"
           description={t("settings.import.import_bookmarks_from_html_file")}
         >
           <FilePickerButton
@@ -160,7 +162,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "html" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -177,7 +179,25 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "pocket" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
+          </FilePickerButton>
+        </ImportCard>
+        <ImportCard
+          text="Raindrop"
+          description="从 Raindrop.io 导出的 CSV 文件导入收藏（含标签与收藏夹）。"
+        >
+          <FilePickerButton
+            size={"sm"}
+            loading={false}
+            accept=".csv"
+            multiple={false}
+            inputTestId="import-raindrop-input"
+            className="flex items-center gap-2"
+            onFileSelect={(file) =>
+              runUploadBookmarkFile({ file, source: "raindrop" })
+            }
+          >
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -194,7 +214,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "matter" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -213,7 +233,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "omnivore" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -232,7 +252,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "linkwarden" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -251,7 +271,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "tab-session-manager" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -268,7 +288,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "mymind" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -287,11 +307,11 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "instapaper" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
-          text="Karakeep"
+          text={BRAND.name}
           description={t(
             "settings.import.import_bookmarks_from_karakeep_export",
           )}
@@ -306,7 +326,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "karakeep" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -325,7 +345,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "readwise-reader" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ImportCard
@@ -342,7 +362,7 @@ export function ImportExportRow() {
               runUploadBookmarkFile({ file, source: "onetab" })
             }
           >
-            <p>Import</p>
+            <p>导入</p>
           </FilePickerButton>
         </ImportCard>
         <ExportButton />
@@ -363,6 +383,63 @@ export function ImportExportRow() {
   );
 }
 
+function ExportRow() {
+  const [busy, setBusy] = useState<"json" | "markdown" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // 直接用 tRPC 的 HTTP 端点（batch 格式），避免依赖 useUtils
+  const run = async (format: "json" | "markdown") => {
+    setBusy(format);
+    setError(null);
+    try {
+      const input = encodeURIComponent(
+        JSON.stringify({ "0": { json: { format } } }),
+      );
+      const res = await fetch(`/api/trpc/bookmarks.exportAll?batch=1&input=${input}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`导出失败（${res.status}）`);
+      }
+      const payload = (await res.json()) as {
+        result?: { data?: { json?: { filename: string; content: string; mime: string } } };
+      }[];
+      const data = payload[0]?.result?.data?.json;
+      if (!data) {
+        throw new Error("导出返回为空");
+      }
+      downloadText(data.filename, data.content, data.mime);
+    } catch (e) {
+      setError(String((e as { message?: string })?.message ?? e));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        把你的全部收藏导出成文件。JSON 适合迁移或再加工，Markdown 适合直接阅读与写作。
+        导出不包含附件本体（图片 / PDF），只含元数据与文本。
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={busy !== null} onClick={() => void run("markdown")}>
+          {busy === "markdown" ? "导出中…" : "导出 Markdown"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy !== null}
+          onClick={() => void run("json")}
+        >
+          {busy === "json" ? "导出中…" : "导出 JSON"}
+        </Button>
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </div>
+  );
+}
+
 export default function ImportExport() {
   const { t } = useTranslation();
   return (
@@ -372,6 +449,10 @@ export default function ImportExport() {
       </SettingsSection>
 
       <ImportSessionsSection />
+
+      <SettingsSection title="导出我的数据">
+        <ExportRow />
+      </SettingsSection>
     </SettingsPage>
   );
 }

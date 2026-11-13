@@ -158,7 +158,7 @@ export default function ReportProblemDialog() {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         {submittedReportId ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <CheckCircle2 className="size-12 text-green-600" />
+            <CheckCircle2 className="size-12 text-success" />
             <DialogTitle>{t("problem_report.success.title")}</DialogTitle>
             <DialogDescription className="text-pretty">
               {session?.user.email

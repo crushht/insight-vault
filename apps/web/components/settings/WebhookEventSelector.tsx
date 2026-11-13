@@ -42,7 +42,7 @@ export function WebhookEventSelector({
         <Command>
           <CommandInput placeholder="Search events..." />
           <CommandList>
-            <CommandEmpty>No events found.</CommandEmpty>
+            <CommandEmpty>没有可选事件。</CommandEmpty>
             <CommandGroup>
               {zWebhookEventSchema.options.map((eventType) => (
                 <CommandItem

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@karakeep/root",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -28,7 +28,17 @@
     "test": "turbo test",
     "typecheck": "turbo typecheck",
     "preflight": "turbo run typecheck lint format",
-    "preflight:fix": "turbo run typecheck lint:fix format:fix"
+    "preflight:fix": "turbo run typecheck lint:fix format:fix",
+    "test:auth": "node scripts/e2e-auth.mjs",
+    "test:e2e:web": "node scripts/e2e-web.mjs",
+    "desktop:dev": "electron apps/desktop",
+    "desktop:pack": "npm --prefix apps/desktop run pack",
+    "test:capture": "node scripts/e2e-capture.mjs",
+    "test:ie": "node scripts/e2e-import-export.mjs",
+    "test:pwa": "node scripts/e2e-pwa.mjs",
+    "test:ext": "node scripts/e2e-extension.mjs",
+    "test:ai": "node scripts/e2e-ai-mock.mjs",
+    "test:backup": "node scripts/e2e-backup.mjs"
   },
   "devDependencies": {
     "@types/node": "^24",

@@ -1,5 +1,70 @@
 {
+  "auth": {
+    "reset_title": "Reset your password",
+    "reset_success_title": "Password reset successful",
+    "reset_desc": "Enter your new password below.",
+    "reset_success_desc": "Your password has been successfully reset. You can now sign in with your new password.",
+    "new_password": "New Password",
+    "new_password_placeholder": "Enter your new password",
+    "confirm_new_password": "Confirm New Password",
+    "confirm_new_password_placeholder": "Confirm your new password",
+    "reset_submit": "Reset Password",
+    "go_to_sign_in": "Go to Sign In",
+    "passwords_dont_match": "Passwords don't match",
+    "invalid_token": "Invalid or expired reset token",
+    "check_email_title": "Check your email",
+    "check_email_desc": "If an account with that email exists, we've sent you a password reset link.",
+    "forgot_desc": "Enter your email address and we'll send you a link to reset your password.",
+    "email_address_placeholder": "Enter your email address",
+    "send_reset_link": "Send Reset Link",
+    "invalid_email": "Please enter a valid email address",
+    "unexpected_error": "An unexpected error occurred. Please try again.",
+    "sign_up_title": "Create Your Account",
+    "sign_up_subtitle": "Join {{brand}} to start organizing your bookmarks",
+    "full_name": "Full Name",
+    "full_name_placeholder": "Enter your full name",
+    "confirm_password": "Confirm Password",
+    "confirm_password_placeholder": "Confirm your password",
+    "create_password_placeholder": "Create a password",
+    "sign_up_unavailable": "Sign Up Unavailable",
+    "signups_disabled": "Account registration is currently disabled",
+    "signups_disabled_hint": "Signups are currently disabled. Please contact an administrator for access.",
+    "back_to_sign_in": "Back to Sign In",
+    "already_have_account": "Already have an account?",
+    "oauth_failed": "OAuth login failed",
+    "welcome_back": "Welcome Back",
+    "sign_in_to": "Sign in to your {{brand}} account",
+    "email_placeholder": "Enter your email",
+    "password_placeholder": "Enter your password",
+    "sign_in": "Sign In",
+    "forgot_password": "Forgot your password?",
+    "no_account": "Don't have an account?",
+    "sign_up": "Sign up",
+    "incorrect_credentials": "Incorrect email or password",
+    "or": "Or",
+    "demo_mode": "Demo Mode",
+    "password_auth_disabled": "Password authentication is currently disabled."
+  },
+  "invite": {
+    "loading_title": "Loading Invitation",
+    "loading_desc": "Please wait while we verify your invitation...",
+    "invalid_title": "Invalid Invitation",
+    "invalid_desc": "This invitation link is not valid or has been removed.",
+    "expired_title": "Invitation Expired",
+    "expired_desc": "This invitation link has expired and is no longer valid.",
+    "expired_hint": "Please contact an administrator to request a new invitation.",
+    "accept_title": "Accept Your Invitation",
+    "accept_subtitle": "Complete your account setup to join {{brand}}",
+    "invited_email": "Invited email:",
+    "creating_account": "Creating Account...",
+    "create_and_sign_in": "Create Account & Sign In",
+    "signin_failed": "Account created but sign in failed. Please try signing in manually."
+  },
   "common": {
+    "topics": "Smart Topics",
+    "membership": "Support",
+    "knowledge_graph": "Knowledge Graph",
+    "ai_chat": "AI Chat",
     "default": "Default",
     "id": "ID",
     "url": "URL",
@@ -43,7 +108,8 @@
     },
     "quota": "Quota",
     "bookmarks": "Bookmarks",
-    "storage": "Storage"
+    "storage": "Storage",
+    "create": "Create"
   },
   "layouts": {
     "masonry": "Masonry",
@@ -248,6 +314,7 @@
       }
     },
     "ai": {
+      "preferences": "AI preferences",
       "ai_settings": "AI Settings",
       "auto_tagging": "Auto-tagging",
       "auto_tagging_description": "Automatically generate tags for your bookmarks using AI.",
@@ -794,7 +861,8 @@
         "clean_assets": "Clean Dangling Assets & Re-sync Metadata",
         "migrate_large_link_html_content": "Move Large Inline HTML Content to Assets",
         "reprocess_assets_fix_mode": "Reprocess Unprocessed Assets"
-      }
+      },
+      "confirm_action": "Confirm Action"
     },
     "users_list": {
       "users_list": "Users List",
@@ -847,6 +915,47 @@
       "resummarize_queued": "Re-summarize job has been queued",
       "view": "View",
       "fetch_error": "Error fetching bookmark"
+    },
+    "add_user": {
+      "title": "Add User",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirm_password": "Confirm Password",
+      "role": "Role",
+      "role_user": "User",
+      "role_admin": "Admin"
+    },
+    "reset_password": {
+      "title": "Reset Password",
+      "new_password": "New Password",
+      "confirm_new_password": "Confirm New Password"
+    },
+    "create_invite": {
+      "title": "Send User Invitation",
+      "email_address": "Email Address"
+    },
+    "invites": {
+      "email": "Email",
+      "invited_by": "Invited By",
+      "created": "Created",
+      "actions": "Actions",
+      "revoke_title": "Revoke Invite"
+    },
+    "update_user": {
+      "title": "Edit User",
+      "role": "Role",
+      "role_user": "User",
+      "role_admin": "Admin",
+      "bookmark_quota": "Bookmark Quota",
+      "storage_quota": "Storage Quota (bytes)",
+      "unlimited": "Unlimited (leave empty)"
+    },
+    "overview": {
+      "update_available": "Update available"
+    },
+    "orders": {
+      "orders": "Orders"
     }
   },
   "options": {
@@ -860,6 +969,7 @@
     "report_a_problem": "Report a Problem"
   },
   "lists": {
+    "section_title": "Lists",
     "all_lists": "All Lists",
     "favourites": "Favourites",
     "shared": "Shared",

@@ -15,6 +15,8 @@ import {
   useBookmarkDisplaySettings,
   useBookmarkLayout,
 } from "@/lib/userLocalSettings/bookmarksLayout";
+import { highlightText } from "@/lib/highlight";
+import { useSearchQuery } from "@/lib/search-query-context";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -65,7 +67,7 @@ function BottomRow({
   bookmark: ZBookmark;
 }) {
   return (
-    <div className="justify flex w-full shrink-0 justify-between text-gray-500">
+    <div className="justify flex w-full shrink-0 justify-between text-muted-foreground/80">
       <div className="flex items-center gap-2 overflow-hidden text-nowrap font-light">
         {footer && <>{footer}•</>}
         <Link
@@ -319,6 +321,8 @@ function ListView({
   className,
   bookmarkIndex,
 }: Props) {
+  // 搜索命中词高亮（无 Meilisearch 时服务端不给高亮，前端自己标）
+  const searchQuery = useSearchQuery();
   const { showNotes, showTags, showTitle, imageFit } =
     useBookmarkDisplaySettings();
   const imgFitClass = switchCase(imageFit, {
@@ -349,7 +353,7 @@ function ListView({
         <div className="flex flex-col gap-2 overflow-hidden">
           {showTitle && title && (
             <div className="line-clamp-2 flex-none shrink-0 overflow-hidden text-ellipsis break-words text-lg">
-              {title}
+              {typeof title === "string" ? highlightText(title, searchQuery) : title}
             </div>
           )}
           {content && <div className="shrink-1 overflow-hidden">{content}</div>}
@@ -439,6 +443,8 @@ function CompactView({
   className,
   bookmarkIndex,
 }: Props) {
+  // 搜索命中词高亮（无 Meilisearch 时服务端不给高亮，前端自己标）
+  useSearchQuery();
   const { showTitle } = useBookmarkDisplaySettings();
   const isBulkEditEnabled = useBulkActionsStore(
     (state) => state.isBulkEditEnabled,
@@ -479,13 +485,13 @@ function CompactView({
             </div>
           )}
           {footer && (
-            <p className="flex shrink-0 gap-2 text-gray-500">•{footer}</p>
+            <p className="flex shrink-0 gap-2 text-muted-foreground/80">•{footer}</p>
           )}
-          <p className="text-gray-500">•</p>
+          <p className="text-muted-foreground/80">•</p>
           <Link
             href={`/dashboard/preview/${bookmark.id}`}
             suppressHydrationWarning
-            className="shrink-0 gap-2 text-gray-500"
+            className="shrink-0 gap-2 text-muted-foreground/80"
           >
             <BookmarkFormattedCreatedAt createdAt={bookmark.createdAt} />
           </Link>

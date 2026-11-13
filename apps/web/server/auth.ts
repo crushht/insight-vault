@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { TURNSTILE_TOKEN_HEADER } from "@/lib/auth/constants";
 import { createId } from "@paralleldrive/cuid2";
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import requestIp from "request-ip";
 import { z } from "zod";
@@ -9,7 +9,7 @@ import { z } from "zod";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
-import { genericOAuth } from "better-auth/plugins";
+import { emailOTP, genericOAuth } from "better-auth/plugins";
 import type { GenericOAuthConfig } from "better-auth/plugins";
 
 import { db } from "@karakeep/db";
@@ -40,10 +40,13 @@ import {
   verifyPasswordHash,
 } from "@karakeep/trpc/auth";
 import {
+  sendOtpEmail,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "@karakeep/trpc/email";
 import { verifyTurnstileToken } from "@karakeep/trpc/lib/turnstile";
+
+import { shouldSkipVerificationEmail } from "@/lib/auth/otp";
 
 const CUSTOM_OAUTH_PROVIDER_ID = "custom";
 const DEFAULT_DISPLAY_NAME = "User";
@@ -327,6 +330,10 @@ function logSignInFailure(path: string, body: unknown, returned: unknown) {
   }
 }
 
+function buildVerificationCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 function buildVerificationUrl(email: string, token: string, url: string) {
   const verificationUrl = new URL(`${serverConfig.publicUrl}/verify-email`);
   verificationUrl.searchParams.set("token", token);
@@ -418,7 +425,8 @@ export const auth = betterAuth({
     },
   }),
   session: {
-    expiresIn: 30 * 24 * 60 * 60,
+    // 默认 30 天；桌面版把 AUTH_SESSION_DAYS 设成 365，「登录一次管一年」
+    expiresIn: serverConfig.auth.sessionDays * 24 * 60 * 60,
     updateAge: 24 * 60 * 60,
     disableSessionRefresh: serverConfig.degradedMode,
   },
@@ -456,15 +464,41 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: serverConfig.auth.emailVerificationRequired,
     expiresIn: 24 * 60 * 60,
+    // 和上游不同：这里发**6 位验证码**而不是验证链接。
+    // 链接在桌面端/手机端体验很差（要切到邮箱、点开、再切回来），
+    // 验证码可以原地输入。链接方式仍然可用（下面 url 参数照样保留）。
     sendVerificationEmail: serverConfig.email.smtp
       ? async ({ user, url, token }) => {
-          void sendVerificationEmail(
-            user.email,
-            user.name,
-            buildVerificationUrl(user.email, token, url),
-          ).catch((error) => {
-            console.error("Failed to send verification email:", error);
-          });
+          // 注册流程里已经用 6 位码验证过邮箱了，这里不再重复发一封
+          if (shouldSkipVerificationEmail(user.email)) {
+            return;
+          }
+          const code = buildVerificationCode();
+          try {
+            const identifier = `otp:verify:${user.email.toLowerCase()}`;
+            await db
+              .delete(verificationTokens)
+              .where(eq(verificationTokens.identifier, identifier));
+            await db.insert(verificationTokens).values({
+              identifier,
+              value: code,
+              expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+            });
+            await sendOtpEmail(user.email, code, {
+              expiresInMinutes: 15,
+              purpose: "email-verification",
+            });
+          } catch (error) {
+            console.error("Failed to send verification code:", error);
+            // 发码失败时退回原来的链接方式，别让用户卡在注册流程里
+            void sendVerificationEmail(
+              user.email,
+              user.name,
+              buildVerificationUrl(user.email, token, url),
+            ).catch((e) => {
+              console.error("Failed to send verification email:", e);
+            });
+          }
         }
       : undefined,
   },
@@ -574,7 +608,27 @@ export const auth = betterAuth({
   onAPIError: {
     errorURL: "/signin",
   },
-  plugins: oauthConfig ? [genericOAuth({ config: [oauthConfig] })] : [],
+  plugins: [
+    ...(oauthConfig ? [genericOAuth({ config: [oauthConfig] })] : []),
+    // 邮箱验证码登录：只在配了 SMTP 时启用（不配就没有这个入口，不会出现「点了没反应」）
+    ...(serverConfig.email.smtp
+      ? [
+          emailOTP({
+            otpLength: 6,
+            expiresIn: 5 * 60,
+            // 注意：emailOTP 1.7 不认识 rateLimit 字段，传了会让插件构造失败
+            // （表现是端点直接 404）。频率限制交给 better-auth 的全局 rateLimit。
+            async sendVerificationOTP({ email, otp }) {
+              void sendOtpEmail(email, otp, { expiresInMinutes: 5 }).catch(
+                (error) => {
+                  console.error("Failed to send OTP email:", error);
+                },
+              );
+            },
+          }),
+        ]
+      : []),
+  ],
 });
 
 async function fetchServerAuthSession(): Promise<AuthSession | null> {

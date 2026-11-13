@@ -162,7 +162,7 @@ export function WebhooksEditorDialog() {
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Close
+              关闭
             </Button>
           </DialogClose>
           <ActionButton
@@ -174,7 +174,7 @@ export function WebhooksEditorDialog() {
             className="items-center"
           >
             <Plus className="size-4" />
-            Add
+            添加
           </ActionButton>
         </DialogFooter>
       </DialogContent>

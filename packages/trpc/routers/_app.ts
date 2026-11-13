@@ -4,6 +4,12 @@ import { apiKeysAppRouter } from "./apiKeys";
 import { assetsAppRouter } from "./assets";
 import { backupsAppRouter } from "./backups";
 import { bookmarksAppRouter } from "./bookmarks";
+import { aiConfigAppRouter } from "./aiConfig";
+import { chatAppRouter } from "./chat";
+import { creationAppRouter } from "./creation";
+import { graphAppRouter } from "./graph";
+import { paymentAppRouter } from "./payment";
+import { topicsAppRouter } from "./topics";
 import { configAppRouter } from "./config";
 import { feedsAppRouter } from "./feeds";
 import { highlightsAppRouter } from "./highlights";
@@ -21,6 +27,12 @@ import { webhooksAppRouter } from "./webhooks";
 
 export const appRouter = router({
   bookmarks: bookmarksAppRouter,
+  aiConfig: aiConfigAppRouter,
+  chat: chatAppRouter,
+  creation: creationAppRouter,
+  graph: graphAppRouter,
+  payment: paymentAppRouter,
+  topics: topicsAppRouter,
   apiKeys: apiKeysAppRouter,
   users: usersAppRouter,
   lists: listsAppRouter,

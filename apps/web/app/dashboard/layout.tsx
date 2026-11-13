@@ -1,7 +1,10 @@
+import { Crown, MessageSquare, Network, PenLine, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import AllLists from "@/components/dashboard/sidebar/AllLists";
 import MobileSidebar from "@/components/shared/sidebar/MobileSidebar";
 import Sidebar from "@/components/shared/sidebar/Sidebar";
+import { SearchQueryBridge } from "@/components/dashboard/SearchQueryBridge";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import SidebarLayout from "@/components/shared/sidebar/SidebarLayout";
 import { Separator } from "@/components/ui/separator";
 import { ReaderSettingsProvider } from "@/lib/readerSettings";
@@ -12,11 +15,16 @@ import { TRPCError } from "@trpc/server";
 import { TFunction } from "i18next";
 import {
   Archive,
+  Settings,
   ClipboardList,
+  FileText,
   Highlighter,
   Home,
+  Image as ImageIcon,
   Search,
   Tag,
+  Video as VideoIcon,
+  FileType2,
 } from "lucide-react";
 
 import { PluginManager, PluginType } from "@karakeep/shared/plugins";
@@ -62,6 +70,27 @@ export default async function Dashboard({
         icon: <Home size={18} />,
         path: "/dashboard/bookmarks",
       },
+      // 内容形态分类：走查询语言（is:image / is:video / is:pdf），结果走搜索页
+      {
+        name: "图片",
+        icon: <ImageIcon size={18} />,
+        path: "/dashboard/search?q=is%3Aimage",
+      },
+      {
+        name: "视频",
+        icon: <VideoIcon size={18} />,
+        path: "/dashboard/search?q=is%3Avideo",
+      },
+      {
+        name: "文章",
+        icon: <FileText size={18} />,
+        path: "/dashboard/search?q=is%3Alink+-is%3Avideo",
+      },
+      {
+        name: "PDF / 文件",
+        icon: <FileType2 size={18} />,
+        path: "/dashboard/search?q=is%3Apdf",
+      },
       PluginManager.isRegistered(PluginType.Search)
         ? [
             {
@@ -71,6 +100,36 @@ export default async function Dashboard({
             },
           ]
         : [],
+      {
+        name: t("common.ai_chat"),
+        icon: <MessageSquare size={18} />,
+        path: "/dashboard/chat",
+      },
+      {
+        name: t("common.knowledge_graph"),
+        icon: <Network size={18} />,
+        path: "/dashboard/graph",
+      },
+      {
+        name: t("common.topics"),
+        icon: <Sparkles size={18} />,
+        path: "/dashboard/topics",
+      },
+      {
+        name: t("common.create"),
+        icon: <PenLine size={18} />,
+        path: "/dashboard/create",
+      },
+      {
+        name: t("common.membership"),
+        icon: <Crown size={18} />,
+        path: "/dashboard/support",
+      },
+      {
+        name: "设置",
+        icon: <Settings size={18} />,
+        path: "/settings",
+      },
       {
         name: t("common.tags"),
         icon: <Tag size={18} />,
@@ -100,6 +159,7 @@ export default async function Dashboard({
   return (
     <UserSettingsContextProvider userSettings={userSettings.data}>
       <ReaderSettingsProvider>
+        <SearchQueryBridge>
         <SidebarLayout
           sidebar={
             <Sidebar
@@ -116,7 +176,9 @@ export default async function Dashboard({
           modal={modal}
         >
           {children}
+          <InstallPrompt />
         </SidebarLayout>
+        </SearchQueryBridge>
       </ReaderSettingsProvider>
     </UserSettingsContextProvider>
   );

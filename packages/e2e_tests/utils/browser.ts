@@ -17,6 +17,15 @@ export const it = base.extend<{ page: Page }>({
         viewport: { width: 1440, height: 900 },
         locale: "en-US",
       });
+      // 产品默认语言是中文（ADR-018），但 E2E 断言基于英文可访问名。
+      // 这里显式把界面语言钉成 en，让 52 个既有用例继续可用。
+      await page.context().addCookies([
+        {
+          name: "hoarder-user-local-settings",
+          value: JSON.stringify({ lang: "en" }),
+          url: `http://localhost:${inject("karakeepPort")}`,
+        },
+      ]);
       page.setDefaultTimeout(10000);
       await use(page);
     } finally {
@@ -97,10 +106,8 @@ export function bookmarkCards(page: Page) {
 // by role, which skips hidden elements, like a server-rendered copy that's
 // still in the DOM.
 export function bookmarkEditor(page: Page) {
-  return page.getByRole("textbox", {
-    name: "Paste a link, write a note or drop an image…",
-    exact: true,
-  });
+  // 用 data-testid 而不是可访问名：文案随语言变化，测试不该跟着改。
+  return page.getByTestId("bookmark-editor");
 }
 
 // Tests that wait on the background workers (crawling, indexing, tagging)

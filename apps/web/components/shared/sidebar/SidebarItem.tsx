@@ -46,15 +46,16 @@ export default function SidebarItem({
         className,
       )}
       style={style}
-      onDrop={onDrop}
-      onDragOver={onDragOver}
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
     >
       <div className="flex flex-1 items-center">
         {collapseButton}
         <Link
           href={path}
+          // 拖放挂在可交互元素（a）上：既满足 a11y 规则，也让整行都是放置目标
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragEnter={onDragEnter}
+          onDragLeave={onDragLeave}
           className={cn(
             "flex flex-1 items-center gap-x-2 rounded-[inherit] px-3 py-2",
             linkClassName,

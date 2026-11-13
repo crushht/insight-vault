@@ -69,7 +69,7 @@ function EditMode({
         delayDuration={500}
         size="none"
         variant="ghost"
-        className="align-middle text-gray-400"
+        className="align-middle text-muted-foreground/80"
         loading={isSaving}
         onClick={() => onSave()}
       >
@@ -80,7 +80,7 @@ function EditMode({
         delayDuration={500}
         size="none"
         variant="ghost"
-        className="align-middle text-gray-400"
+        className="align-middle text-muted-foreground/80"
         onClick={() => {
           setEditable(false);
         }}
@@ -113,7 +113,7 @@ function ViewMode({
           tooltip={t("actions.edit_title")}
           size="none"
           variant="ghost"
-          className="align-middle text-gray-400"
+          className="align-middle text-muted-foreground/80"
           onClick={() => {
             setEditable(true);
           }}

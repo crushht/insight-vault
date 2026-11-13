@@ -10,7 +10,8 @@ describe("normalizeI18nLanguage", () => {
 });
 
 describe("formatLocalDate", () => {
-  const date = new Date("2025-01-05T15:42:00Z");
+  // 用本地时间构造，避免断言依赖运行机器的时区（CI 是 UTC，开发机多半不是）
+  const date = new Date(2025, 0, 5, 15, 42);
 
   it("formats supported locales with localized date and time", () => {
     expect(formatLocalDate(date, "PP, p", "en")).toBe("Jan 5, 2025, 3:42 PM");
@@ -19,13 +20,16 @@ describe("formatLocalDate", () => {
 
   it("lets Intl fall back for structurally valid but unsupported locales", () => {
     expect(() => formatLocalDate(date, "PPP", "zz-ZZ")).not.toThrow();
-    expect(formatLocalDate(date, "PPP", "zz-ZZ")).toBe("January 5, 2025");
+    // 回退到运行环境的默认 locale（这里再算一次，避免把默认语言写死成英文）
+    expect(formatLocalDate(date, "PPP", "zz-ZZ")).toBe(
+      formatLocalDate(date, "PPP"),
+    );
   });
 
   it("falls back to the runtime locale for malformed locale tags", () => {
     expect(() => formatLocalDate(date, "PPP", "not_a_locale")).not.toThrow();
     expect(formatLocalDate(date, "PPP", "not_a_locale")).toBe(
-      "January 5, 2025",
+      formatLocalDate(date, "PPP"),
     );
   });
 });

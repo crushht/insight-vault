@@ -38,10 +38,24 @@ const dnsCache = new LRUCache<string, string[]>({
   ttl: 5 * 60 * 1000, // 5 minutes in milliseconds
 });
 
-async function resolveHostAddresses(hostname: string): Promise<string[]> {
+/**
+ * 用指定的 DNS 服务器（传 null 表示系统默认）解析 A / AAAA 记录。
+ * 返回地址列表与错误信息，不抛异常 —— 由调用方决定怎么回退。
+ */
+async function attemptResolve(
+  hostname: string,
+  servers: string[] | null,
+): Promise<{ addresses: string[]; errors: string[] }> {
   const resolver = new dns.Resolver({
     timeout: serverConfig.crawler.ipValidation.dnsResolverTimeoutSec * 1000,
   });
+  if (servers) {
+    try {
+      resolver.setServers(servers);
+    } catch (e) {
+      // 某些平台不支持自定义服务器，忽略并继续用默认
+    }
+  }
 
   const results = await Promise.allSettled([
     resolver.resolve4(hostname),
@@ -50,29 +64,70 @@ async function resolveHostAddresses(hostname: string): Promise<string[]> {
 
   const addresses: string[] = [];
   const errors: string[] = [];
-
   for (const result of results) {
     if (result.status === "fulfilled") {
       addresses.push(...result.value);
     } else {
       const reason = result.reason;
-      if (reason instanceof Error) {
-        errors.push(reason.message);
-      } else {
-        errors.push(String(reason));
-      }
+      errors.push(reason instanceof Error ? reason.message : String(reason));
     }
   }
+  return { addresses, errors };
+}
 
+/**
+ * 解析主机名，带两级回退。
+ *
+ * 背景：c-ares（`dns.Resolver`）读的是系统 DNS 配置，某些环境下那个服务器
+ * 对 c-ares 不可达（报 ECONNREFUSED），但**普通 fetch / getaddrinfo 是通的**。
+ * 表现为「抓取全部失败、连 localhost 都解析不了」，很容易被误判成网络不通。
+ *
+ * 回退顺序：
+ *   1. 系统默认 DNS（原有行为）
+ *   2. 公共 DNS（阿里 / 腾讯 / Cloudflare）
+ *   3. OS resolver（getaddrinfo，即 dns.lookup）
+ *
+ * 安全性不变：返回的地址仍会逐个过 `isAddressForbidden`，SSRF 防护没有降级。
+ */
+async function resolveHostAddresses(hostname: string): Promise<string[]> {
+  // 1) 系统默认
+  let { addresses, errors } = await attemptResolve(hostname, null);
   if (addresses.length > 0) {
     return addresses;
   }
 
-  const errorMessage =
+  // 2) 公共 DNS
+  const publicAttempt = await attemptResolve(hostname, [
+    "223.5.5.5",
+    "119.29.29.29",
+    "1.1.1.1",
+  ]);
+  if (publicAttempt.addresses.length > 0) {
+    logger.warn(
+      `[dns] system resolver failed for ${hostname}, fellBackToPublicDns`,
+    );
+    return publicAttempt.addresses;
+  }
+  errors = errors.concat(publicAttempt.errors);
+
+  // 3) OS resolver
+  try {
+    const looked = await dns.lookup(hostname, { all: true });
+    if (looked.length > 0) {
+      logger.warn(
+        `[dns] c-ares failed for ${hostname}, fell back to getaddrinfo`,
+      );
+      return looked.map((l) => l.address);
+    }
+  } catch (e) {
+    errors.push(e instanceof Error ? e.message : String(e));
+  }
+
+  throw new Error(
     errors.length > 0
       ? errors.join("; ")
-      : "DNS lookup did not return any A or AAAA records";
-  throw new Error(errorMessage);
+      : "DNS lookup did not return any A or AAAA records",
+  );
 }
 
 // IPv6 ranges that carry an IPv4 address in their last 32 bits, which a

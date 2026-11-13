@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionButton } from "@/components/ui/action-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -21,31 +21,35 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { requestPasswordReset } from "@/lib/auth/client";
+import { useTranslation } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-});
-
 export default function ForgotPasswordForm() {
+  const { t } = useTranslation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
-    resolver: zodResolver(forgotPasswordSchema),
+  const schema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(t("auth.invalid_email")),
+      }),
+    [t],
+  );
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (values: z.infer<typeof forgotPasswordSchema>) => {
+  const onSubmit = async (values: z.infer<typeof schema>) => {
     setErrorMessage("");
     const result = await requestPasswordReset(values.email);
     if (!result.ok) {
-      setErrorMessage(
-        result.error ?? "An unexpected error occurred. Please try again.",
-      );
+      setErrorMessage(result.error ?? t("auth.unexpected_error"));
       return;
     }
     setIsSubmitted(true);
@@ -53,26 +57,23 @@ export default function ForgotPasswordForm() {
 
   return (
     <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">
-          {isSubmitted ? "Check your email" : "Forgot your password?"}
+      <CardHeader className="space-y-1.5 text-center">
+        <CardTitle className="font-display text-h3 font-semibold tracking-tight">
+          {isSubmitted ? t("auth.check_email_title") : t("auth.forgot_password")}
         </CardTitle>
         <CardDescription>
-          {isSubmitted
-            ? "If an account with that email exists, we've sent you a password reset link."
-            : "Enter your email address and we'll send you a link to reset your password."}
+          {isSubmitted ? t("auth.check_email_desc") : t("auth.forgot_desc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {isSubmitted ? (
           <>
             <div className="flex items-center justify-center">
-              <CheckCircle className="h-12 w-12 text-green-600" />
+              <CheckCircle className="h-12 w-12 text-success" />
             </div>
             <Alert>
               <AlertDescription className="text-center">
-                If an account with that email exists, we&apos;ve sent you a
-                password reset link.
+                {t("auth.check_email_desc")}
               </AlertDescription>
             </Alert>
             <ActionButton
@@ -80,8 +81,9 @@ export default function ForgotPasswordForm() {
               loading={false}
               onClick={() => router.push("/signin")}
               className="w-full"
+              data-testid="forgot-back"
             >
-              Back to Sign In
+              {t("auth.back_to_sign_in")}
             </ActionButton>
           </>
         ) : (
@@ -103,11 +105,12 @@ export default function ForgotPasswordForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t("common.email")}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="Enter your email address"
+                          placeholder={t("auth.email_address_placeholder")}
+                          data-testid="forgot-email"
                           {...field}
                         />
                       </FormControl>
@@ -120,8 +123,9 @@ export default function ForgotPasswordForm() {
                   type="submit"
                   loading={form.formState.isSubmitting}
                   className="w-full"
+                  data-testid="forgot-submit"
                 >
-                  Send Reset Link
+                  {t("auth.send_reset_link")}
                 </ActionButton>
               </form>
             </Form>
@@ -133,7 +137,7 @@ export default function ForgotPasswordForm() {
                 onClick={() => router.push("/signin")}
                 className="w-full"
               >
-                Back to Sign In
+                {t("auth.back_to_sign_in")}
               </ActionButton>
             </div>
           </>

@@ -1,0 +1,234 @@
+{
+  "updatedAt": "2026-11-13T14:38:27.103Z",
+  "items": [
+    {
+      "id": "pw-ext",
+      "title": "Playwright 扩面：新建收藏 / 搜索 / 设置页 / 390 响应式",
+      "status": "done",
+      "why": "每次改 UI 都要有网兜；现在只有 6 条账号链路",
+      "verify": "pnpm test:e2e:web（期望 ≥ 10 passed）",
+      "notes": [
+        "沿用 scripts/e2e-web.mjs 的临时库 + 生产构建 harness",
+        "新建收藏可用文字笔记（不需要外网）；URL 抓取另做烟测",
+        "390 宽只断言不溢出/不遮挡，不追像素",
+        "扩到 12 条（新建笔记/搜索/分类/设置/390 宽），并顺带发现并修好「队列表缺失导致新建收藏 500」"
+      ],
+      "finishedAt": "2026-11-13T12:13:37.605Z"
+    },
+    {
+      "id": "sys-status",
+      "title": "设置里的「系统状态」页：版本 / 数据目录 / 队列积压 / DB 大小 / AI 配置",
+      "status": "done",
+      "why": "桌面版出问题时用户能自己看状态，少一轮问答",
+      "verify": "手动打开 /settings/info 有数据；typecheck 通过",
+      "needs": [],
+      "finishedAt": "2026-11-13T12:18:05.503Z",
+      "notes": [
+        "新增 /api/system（登录后可见，含内容大小/计数/AI/SMTP）+ 设置页系统状态卡片，可复制诊断信息"
+      ]
+    },
+    {
+      "id": "capture-smoke",
+      "title": "收藏创建链路烟测：URL → 标题/正文 → 可搜索",
+      "status": "done",
+      "why": "抓取链路是本产品的地基，目前只有历史轮次的手工记录",
+      "verify": "抓 example.com 有标题；搜索能命中",
+      "needs": [
+        "外网可达（本机网络受限时用本地 HTML 文件起 http 服务）"
+      ],
+      "startedAt": "2026-11-13T12:28:15.605Z",
+      "finishedAt": "2026-11-13T12:44:17.715Z",
+      "notes": [
+        "scripts/e2e-capture.mjs：本地假站点→收藏→workers 抓取→标题改写→按标题搜到（4/4，无需外网/Meili/Chrome）"
+      ]
+    },
+    {
+      "id": "search-body",
+      "title": "搜索降级时正文也可搜（无 Meilisearch 时把归档正文纳入 SQL 匹配）",
+      "status": "done",
+      "why": "现在按标题能搜、按正文搜不到；没配 Meili 的安装（桌面版默认）会漏掉正文命中",
+      "verify": "pnpm test:capture 里「按正文能搜到」从 INFO 变 PASS，且不拖慢列表搜索",
+      "needs": [],
+      "startedAt": "2026-11-13T12:44:26.536Z",
+      "finishedAt": "2026-11-13T12:46:06.188Z",
+      "notes": [
+        "SQL 降级搜索加入 bookmarkLinks.htmlContent 与 bookmarkAssets.content；pnpm test:capture 5/5（按正文能搜到从 INFO 变 PASS）"
+      ]
+    },
+    {
+      "id": "graph-perf",
+      "title": "图谱 >200 节点换 canvas / 虚拟化",
+      "status": "done",
+      "why": "实体多的时候 SVG 力导向会卡",
+      "verify": "1000 实体页面交互不掉帧（粗略计时）",
+      "startedAt": "2026-11-13T12:51:55.617Z",
+      "finishedAt": "2026-11-13T13:02:45.390Z",
+      "notes": [
+        "布局改空间网格：1000 节点 823→72ms（11.4×）、500 节点 157→23ms；边合成单条 path、标签限 16/40；页面加 200/500 选择器，实测 500 节点切换 178ms、SVG 节点 500+1+16"
+      ]
+    },
+    {
+      "id": "pdf-ai",
+      "title": "PDF 智能阅读 + 独立 OCR 通道",
+      "status": "blocked",
+      "why": "任务书点名的能力，现在只能靠视觉模型直接读图",
+      "verify": "上传一份 PDF 能出章节要点",
+      "needs": [
+        "可用的模型 Key（视觉/文本）"
+      ],
+      "blockedReason": "需要可用的视觉/文本模型 Key（设置里配好才能验 PDF 章节与 OCR）"
+    },
+    {
+      "id": "ci-run",
+      "title": "GitHub Actions 实跑（CI / Release / 桌面打包 workflow）",
+      "status": "blocked",
+      "why": "三条 workflow 从未在真实 runner 上跑过",
+      "verify": "Actions 页面 CI 绿；release tag 能出镜像与附件",
+      "needs": [
+        "仓库推到 GitHub"
+      ],
+      "blockedReason": "需要把仓库推到 GitHub 才能看 Actions"
+    },
+    {
+      "id": "sign-update",
+      "title": "代码签名 + electron-updater 自动更新",
+      "status": "blocked",
+      "why": "首装 SmartScreen 提示；发布后没法自动升级",
+      "verify": "装包无警告；改版本后能收到更新提示",
+      "needs": [
+        "代码签名证书 / 发布渠道"
+      ],
+      "blockedReason": "需要代码签名证书与发布渠道"
+    },
+    {
+      "id": "a11y-pass",
+      "title": "无障碍与键盘可达：补齐历史控件 aria-label、表格排序按钮可聚焦",
+      "status": "done",
+      "why": "lint 还有若干 a11y 警告；键盘用户点不到部分操作",
+      "verify": "web lint 的 a11y 警告清零；tab 能走完收藏卡片主要操作",
+      "needs": [],
+      "startedAt": "2026-11-13T13:07:31.642Z",
+      "finishedAt": "2026-11-13T13:15:20.250Z",
+      "notes": [
+        "jsx-a11y 警告清零（侧栏拖放挂到 <Link>、图谱空表头加 sr-only 文案）；Playwright 新增「键盘 Tab 到收藏卡片 + Enter 打开」检查，13/13 通过"
+      ]
+    },
+    {
+      "id": "import-export-e2e",
+      "title": "导入 / 导出端到端烟测：Raindrop CSV 导入 + JSON/Markdown 导出可还原",
+      "status": "done",
+      "why": "有单测但没有端到端证据；换机器迁移是刚需",
+      "verify": "脚本导入 50 条再导出，条数与标题一致",
+      "needs": [],
+      "startedAt": "2026-11-13T13:19:24.154Z",
+      "finishedAt": "2026-11-13T13:29:53.361Z",
+      "notes": [
+        "scripts/e2e-import-export.mjs：30 条导出 JSON/Markdown 对账 + UI 上传 Raindrop CSV 5 条经 workers 落库，6/6 通过"
+      ]
+    },
+    {
+      "id": "reader-ai-panel",
+      "title": "阅读台的 AI 面板：正文旁问一句、带引用回答",
+      "status": "done",
+      "why": "任务书 P6-6；现在阅读页只有正文与高亮",
+      "verify": "打开 /reader/<id> 能提问并看到 [n] 引用",
+      "needs": [],
+      "startedAt": "2026-11-13T13:34:57.854Z",
+      "finishedAt": "2026-11-13T13:40:43.284Z",
+      "notes": [
+        "新增 chat.askAboutBookmark（只在本收藏分块内检索、带引用、越界引用不返回）+ 阅读台右侧提问面板；5 条单测（mock 模型）+ 浏览器实测（无分块→资料中没有；有分块无模型→明确提示+去配置入口）"
+      ]
+    },
+    {
+      "id": "pwa-offline",
+      "title": "PWA 安装引导与离线壳：断网打开不白屏",
+      "status": "done",
+      "why": "任务书 P8-1；现在只有 manifest，没有 service worker",
+      "verify": "断网刷新仍能打开收藏列表（缓存壳）",
+      "needs": [],
+      "startedAt": "2026-11-13T13:45:08.020Z",
+      "finishedAt": "2026-11-13T13:53:52.637Z",
+      "notes": [
+        "手写 sw.js（导航网络优先4s→缓存→/offline；静态资源缓存优先；api 不拦）+ /offline 兜底页 + 安装提示 + 退出登录清缓存；scripts/e2e-pwa.mjs 真停服务器测：5/5（注意 Playwright setOffline 不作用于 SW，测不准）"
+      ]
+    },
+    {
+      "id": "extension-build",
+      "title": "浏览器扩展构建验证：npm run build 出包并加载一次",
+      "status": "done",
+      "why": "扩展只做了文案品牌化，从未实际构建",
+      "verify": "dist 目录产出，Chrome 能加载并收藏一条",
+      "needs": [],
+      "startedAt": "2026-11-13T13:58:13.531Z",
+      "finishedAt": "2026-11-13T14:01:26.689Z",
+      "notes": [
+        "扩展可构建（dist MV3 校验过）+ Chromium 真加载：manifest 5 项 + service worker + popup 渲染/中文化/无上游域名，共 10/10；顺手把默认地址从 cloud.karakeep.com 改成 localhost:3000 并汉化登录/服务器页"
+      ]
+    },
+    {
+      "id": "i18n-sweep",
+      "title": "界面英文残留清扫：设置/导入页等写死英文改成中文",
+      "status": "done",
+      "why": "扩展已中文化，主站还有 ImportCard 之类写死的英文（HTML File / Pocket / Import）",
+      "verify": "grep 关键英文词为零；截图确认设置页全中文",
+      "needs": [],
+      "startedAt": "2026-11-13T14:02:30.544Z",
+      "finishedAt": "2026-11-13T14:06:09.995Z",
+      "notes": [
+        "导入页 14 处 Import/Export/HTML File、Load More×3、Reader View/Highlights/saved、Timezone、删除账号确认、对话框 Close/Add 全部中文化；新增 lib/i18n-en-strings.test.ts 防回潮（扫 components/app 的 .tsx，命中即红）"
+      ]
+    },
+    {
+      "id": "release-1.1.0",
+      "title": "发布 1.1.0：版本号、CHANGELOG 出正式段、README 截图与功能表同步",
+      "status": "done",
+      "why": "未发布段落已经很长，需要一个可打 tag 的版本",
+      "verify": "package.json/desktop 版本一致；CHANGELOG 有 1.1.0 段；README 数字与实际一致",
+      "needs": [],
+      "startedAt": "2026-11-13T14:10:21.115Z",
+      "finishedAt": "2026-11-13T14:17:16.477Z",
+      "notes": [
+        "根包/web/desktop 1.1.0，扩展 manifest 1.3.0；CHANGELOG 出 [1.1.0] 正式段并留空 [未发布]；README 版本行/质量数字/能力表同步；RELEASE.md 产物名改 1.1.0；重打出 InsightVault-1.1.0-win-x64.exe（147MB），旧 1.0.0 已删；未提交、未打 tag"
+      ]
+    },
+    {
+      "id": "ai-mock-e2e",
+      "title": "用本地 mock OpenAI 接口跑通 AI 链路（标签/摘要/对话引用/专题），证明任意 OpenAI 兼容端点可用",
+      "status": "done",
+      "why": "真实模型未验证是可发布前最大的空白；mock 能证明协议与链路正确",
+      "verify": "mock 起在本地，配 Base URL 后：对话回答带 [1]、专题能出报告、标签写库",
+      "needs": [],
+      "startedAt": "2026-11-13T14:17:38.324Z",
+      "finishedAt": "2026-11-13T14:24:19.644Z",
+      "notes": [
+        "scripts/e2e-ai-mock.mjs：本地 OpenAI 兼容 mock（含 SSE 流）+ workers 分块 → 对话 [1] 引用 / 引用数组 / 专题 mode=ai / 流式 delta，4/4 通过"
+      ]
+    },
+    {
+      "id": "shots-refresh",
+      "title": "README 截图刷新：登录/注册/分类页/系统状态/阅读台提问各一张",
+      "status": "done",
+      "why": "现有截图是 11/11 的旧界面，发布页要跟现在的设计一致",
+      "verify": "docs/screenshots 下 5 张新图，README 引用正确",
+      "needs": [],
+      "startedAt": "2026-11-13T14:24:39.228Z",
+      "finishedAt": "2026-11-13T14:29:53.022Z",
+      "notes": [
+        "docs/screenshots 新增 login/register/bookmarks(带样式)/system-status/settings-ai 五张 1440×900 实机截图；README 截图区重排为 5 组并标注每张是什么"
+      ]
+    },
+    {
+      "id": "backup-restore-e2e",
+      "title": "备份/恢复端到端：导出备份 → 删库 → 恢复 → 数据一致",
+      "status": "done",
+      "why": "设置里有备份，但从没验证过恢复能真的把数据带回来",
+      "verify": "备份后清空数据目录，恢复后收藏/标签/高亮数量一致",
+      "needs": [],
+      "startedAt": "2026-11-13T14:30:28.897Z",
+      "finishedAt": "2026-11-13T14:38:27.102Z",
+      "notes": [
+        "scripts/e2e-backup.mjs：3 条收藏+列表+标签 → triggerBackup(status=success) → 解包 JSON 对账 → 删光 → 走 import 流水线恢复 → 3/3 回来，8/8 通过"
+      ]
+    }
+  ]
+}

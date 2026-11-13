@@ -29,7 +29,7 @@ function Highlight({ highlight }: { highlight: ZHighlight }) {
   return (
     <div className="flex flex-col gap-2">
       <HighlightCard highlight={highlight} clickable={false} readOnly={false} />
-      <span className="flex items-center gap-0.5 text-xs italic text-gray-400">
+      <span className="flex items-center gap-0.5 text-xs italic text-muted-foreground/80">
         <span title={localCreatedAt}>{fromNow}</span>
         <Dot />
         <Link
@@ -128,7 +128,7 @@ export default function AllHighlights({
           allHighlights.map((h) => (
             <React.Fragment key={h.id}>
               <Highlight highlight={h} />
-              <Separator className="m-2 h-0.5 bg-gray-100 last:hidden dark:bg-border" />
+              <Separator className="m-2 h-0.5 bg-surface-sunken last:hidden dark:bg-border" />
             </React.Fragment>
           ))}
         {allHighlights && allHighlights.length == 0 && (
@@ -145,7 +145,7 @@ export default function AllHighlights({
               onClick={() => fetchNextPage()}
               variant="ghost"
             >
-              Load More
+              加载更多
             </ActionButton>
           </div>
         )}

@@ -29,6 +29,7 @@ function useLatestRelease() {
 }
 
 function ReleaseInfo() {
+  const { t } = useTranslation();
   const currentRelease = useClientConfig().serverVersion ?? "NA";
   const latestRelease = useLatestRelease();
 
@@ -39,9 +40,9 @@ function ReleaseInfo() {
       <a
         href={REPO_RELEASE_PAGE}
         target="_blank"
-        className="text-blue-500"
+        className="text-brand-500"
         rel="noreferrer"
-        title="Update available"
+        title={t("admin.overview.update_available")}
       >
         ({latestRelease}⬆️)
       </a>
@@ -58,12 +59,12 @@ function ReleaseInfo() {
 function StatsSkeleton() {
   return (
     <AdminCard>
-      <div className="mb-4 h-7 w-32 animate-pulse rounded bg-gray-200 dark:bg-muted"></div>
+      <div className="mb-4 h-7 w-32 animate-pulse rounded bg-border dark:bg-muted"></div>
       <div className="flex flex-col gap-4 sm:flex-row">
         {[1, 2, 3].map((i) => (
           <div key={i} className="rounded-md border bg-card p-4 sm:w-1/4">
-            <div className="mb-2 h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-muted"></div>
-            <div className="h-9 w-16 animate-pulse rounded bg-gray-200 dark:bg-muted"></div>
+            <div className="mb-2 h-4 w-24 animate-pulse rounded bg-border dark:bg-muted"></div>
+            <div className="h-9 w-16 animate-pulse rounded bg-border dark:bg-muted"></div>
           </div>
         ))}
       </div>
@@ -91,13 +92,13 @@ export default function BasicStats() {
       </div>
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="rounded-md border bg-card p-4 sm:w-1/4">
-          <div className="text-sm font-medium text-gray-400">
+          <div className="text-sm font-medium text-muted-foreground/80">
             {t("admin.server_stats.total_users")}
           </div>
           <div className="text-3xl font-semibold">{serverStats.numUsers}</div>
         </div>
         <div className="rounded-md border bg-card p-4 sm:w-1/4">
-          <div className="text-sm font-medium text-gray-400">
+          <div className="text-sm font-medium text-muted-foreground/80">
             {t("admin.server_stats.total_bookmarks")}
           </div>
           <div className="text-3xl font-semibold">
@@ -105,7 +106,7 @@ export default function BasicStats() {
           </div>
         </div>
         <div className="rounded-md border bg-card p-4 sm:w-1/4">
-          <div className="text-sm font-medium text-gray-400">
+          <div className="text-sm font-medium text-muted-foreground/80">
             {t("admin.server_stats.server_version")}
           </div>
           <ReleaseInfo />

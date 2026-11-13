@@ -154,7 +154,7 @@ export default function UserOptions() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-medium">
                 <Clock className="h-4 w-4" />
-                Timezone
+                时区
               </Label>
               <Select
                 disabled={!!clientConfig.demoMode || timezones === null}

@@ -80,11 +80,11 @@ function getStatusColor(status: string) {
     case "pending":
       return "bg-muted text-muted-foreground";
     case "running":
-      return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
+      return "bg-brand-500/10 text-brand-600 dark:text-brand-300";
     case "paused":
-      return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
+      return "bg-warning/10 text-warning dark:text-warning";
     case "completed":
-      return "bg-green-500/10 text-green-700 dark:text-green-400";
+      return "bg-success/10 text-success dark:text-success";
     case "archived":
       return "bg-muted text-muted-foreground";
     case "failed":
@@ -135,7 +135,7 @@ function getResultBadge(
     return (
       <Badge
         variant="secondary"
-        className="bg-blue-500/10 text-blue-700 hover:bg-blue-500/10 dark:text-blue-400"
+        className="bg-brand-500/10 text-brand-600 hover:bg-brand-500/10 dark:text-brand-300"
       >
         <Loader2 className="mr-1 h-3 w-3 animate-spin" />
         {t("settings.import_sessions.detail.result_processing")}
@@ -147,7 +147,7 @@ function getResultBadge(
       return (
         <Badge
           variant="secondary"
-          className="bg-green-500/10 text-green-700 hover:bg-green-500/10 dark:text-green-400"
+          className="bg-success/10 text-success hover:bg-success/10 dark:text-success"
         >
           <CheckCircle2 className="mr-1 h-3 w-3" />
           {t("settings.import_sessions.detail.result_accepted")}
@@ -167,7 +167,7 @@ function getResultBadge(
       return (
         <Badge
           variant="secondary"
-          className="bg-amber-500/10 text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
+          className="bg-warning/10 text-warning hover:bg-warning/10 dark:text-warning"
         >
           {t("settings.import_sessions.detail.result_skipped_duplicate")}
         </Badge>
@@ -375,7 +375,7 @@ export default function ImportSessionDetail({
                 {stats.completedBookmarks > 0 && (
                   <Badge
                     variant="secondary"
-                    className="bg-green-500/10 text-green-700 hover:bg-green-500/10 dark:text-green-400"
+                    className="bg-success/10 text-success hover:bg-success/10 dark:text-success"
                   >
                     <CheckCircle2 className="mr-1.5 h-3 w-3" />
                     {t("settings.import_sessions.badges.completed", {
@@ -397,7 +397,7 @@ export default function ImportSessionDetail({
                 {stats.pendingBookmarks > 0 && (
                   <Badge
                     variant="secondary"
-                    className="bg-amber-500/10 text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
+                    className="bg-warning/10 text-warning hover:bg-warning/10 dark:text-warning"
                   >
                     <Clock className="mr-1.5 h-3 w-3" />
                     {t("settings.import_sessions.badges.pending", {
@@ -408,7 +408,7 @@ export default function ImportSessionDetail({
                 {stats.processingBookmarks > 0 && (
                   <Badge
                     variant="secondary"
-                    className="bg-blue-500/10 text-blue-700 hover:bg-blue-500/10 dark:text-blue-400"
+                    className="bg-brand-500/10 text-brand-600 hover:bg-brand-500/10 dark:text-brand-300"
                   >
                     <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
                     {t("settings.import_sessions.badges.processing", {

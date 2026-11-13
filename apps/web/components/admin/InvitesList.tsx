@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n/client";
 import { ActionButton } from "@/components/ui/action-button";
 import { ButtonWithTooltip } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
@@ -26,6 +27,7 @@ import { AdminCard } from "./AdminCard";
 import CreateInviteDialog from "./CreateInviteDialog";
 
 export default function InvitesList() {
+  const { t } = useTranslation();
   const api = useTRPC();
   const queryClient = useQueryClient();
   const { data: invites } = useSuspenseQuery(api.invites.list.queryOptions());
@@ -72,16 +74,16 @@ export default function InvitesList() {
   ) => (
     <div className="mb-6">
       {inviteList.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground/80">
           No {title.toLowerCase()} invites
         </p>
       ) : (
         <Table>
-          <TableHeader className="bg-gray-200 dark:bg-muted">
-            <TableHead>Email</TableHead>
-            <TableHead>Invited By</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Actions</TableHead>
+          <TableHeader className="bg-border dark:bg-muted">
+            <TableHead>{t("admin.invites.email")}</TableHead>
+            <TableHead>{t("admin.invites.invited_by")}</TableHead>
+            <TableHead>{t("admin.invites.created")}</TableHead>
+            <TableHead>{t("admin.invites.actions")}</TableHead>
           </TableHeader>
           <TableBody>
             {inviteList.map((invite) => (
@@ -106,7 +108,7 @@ export default function InvitesList() {
                         <Mail className="size-3.5" size={14} />
                       </ButtonWithTooltip>
                       <ActionConfirmingDialog
-                        title="Revoke Invite"
+                        title={t("admin.invites.revoke_title")}
                         description={`Are you sure you want to revoke the invite for ${invite.email}? This action cannot be undone.`}
                         actionButton={(setDialogOpen) => (
                           <ActionButton

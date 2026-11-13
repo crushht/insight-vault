@@ -4,11 +4,11 @@ export default {
   expo: {
     ...(IS_DEV
       ? {
-          name: "Karakeep (Dev)",
+          name: "灵感仓 (Dev)",
           scheme: "karakeep-dev",
         }
       : {
-          name: "Karakeep",
+          name: "灵感仓",
           scheme: "karakeep",
         }),
     slug: "hoarder",
@@ -32,7 +32,7 @@ export default {
       splash: {
         image: "./assets/splash.png",
         resizeMode: "contain",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#FBFBF9",
         dark: {
           image: "./assets/splash-white.png",
           resizeMode: "contain",

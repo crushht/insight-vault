@@ -31,6 +31,9 @@ export function openSqliteDatabase(
       sqlite.pragma("journal_mode = DELETE");
     }
   }
+  // Web 与 Workers 是两个进程，写锁竞争时默认会立刻抛 SQLITE_BUSY；
+  // 给 5s 的等待窗口，让并发写退化成「稍慢」而不是「失败」。
+  sqlite.pragma("busy_timeout = 5000");
   sqlite.pragma("cache_size = -65536");
   sqlite.pragma("foreign_keys = ON");
   sqlite.pragma("temp_store = MEMORY");

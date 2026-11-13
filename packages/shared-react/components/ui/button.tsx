@@ -5,33 +5,36 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-label font-medium transition-[background-color,color,box-shadow,border-color] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         none: "",
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-primary text-primary-foreground shadow-e1 hover:bg-primary/90 active:bg-primary/95",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
         destructiveOutline:
           "border border-destructive bg-transparent text-destructive hover:bg-destructive/90 hover:text-destructive-foreground dark:hover:bg-destructive/60",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:hover:bg-input/50",
+          "border border-border bg-surface-raised shadow-e1 hover:border-border-strong hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
           "hover:bg-accent hover:text-accent-foreground focus-visible:ring-0 dark:hover:bg-accent/50",
         ghostDestructive:
           "text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-0 dark:hover:bg-destructive/20",
-        border: "border border-input hover:bg-accent",
-        link: "text-primary underline-offset-4 hover:underline",
+        border: "border border-border hover:bg-accent hover:border-border-strong",
+        link: "text-brand-600 underline-offset-4 hover:underline dark:text-brand-300",
+        // AI 专属：渐变描边（.ai-surface 定义在 globals.css），只用于 AI 触发
+        ai: "ai-surface bg-card text-foreground shadow-e1 hover:shadow-e2",
       },
       size: {
         none: "",
-        default: "h-10 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-9 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5",
-        lg: "h-11 rounded-md px-8 has-[>svg]:px-6",
-        icon: "size-10",
+        default: "h-9 px-3.5 py-1.5 has-[>svg]:px-3",
+        sm: "h-8 gap-1.5 rounded-md px-2.5 has-[>svg]:px-2",
+        lg: "h-11 rounded-md px-6 has-[>svg]:px-5",
+        icon: "size-9",
         "icon-sm": "size-8",
         "icon-xs": "size-6",
       },

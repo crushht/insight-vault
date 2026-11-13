@@ -23,22 +23,22 @@ function ConnectionStatus({
 
   let statusText = t("admin.service_connections.status.not_configured");
   let badgeColor =
-    "bg-gray-100 text-gray-600 dark:bg-muted dark:text-muted-foreground";
-  let iconColor = "text-gray-400";
-  let borderColor = "border-gray-200 dark:border-border";
+    "bg-surface-sunken text-muted-foreground dark:bg-muted dark:text-muted-foreground";
+  let iconColor = "text-muted-foreground/80";
+  let borderColor = "border-border dark:border-border";
 
   if (configured) {
     if (connected) {
       statusText = t("admin.service_connections.status.connected");
       badgeColor =
-        "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400";
-      iconColor = "text-green-500";
+        "bg-success/10 text-success dark:bg-success/20 dark:text-success";
+      iconColor = "text-success";
       borderColor = "border-green-200 dark:border-green-900";
     } else {
       statusText = t("admin.service_connections.status.disconnected");
       badgeColor =
-        "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400";
-      iconColor = "text-red-500";
+        "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive";
+      iconColor = "text-destructive";
       borderColor = "border-red-200 dark:border-red-900";
     }
   }
@@ -72,8 +72,8 @@ function ConnectionStatus({
         </span>
       </div>
       {error && (
-        <div className="mt-3 rounded-md bg-red-50 p-2 dark:bg-red-900/10">
-          <p className="text-xs text-red-600 dark:text-red-400" title={error}>
+        <div className="mt-3 rounded-md bg-destructive/10 p-2 dark:bg-destructive/20">
+          <p className="text-xs text-destructive dark:text-destructive" title={error}>
             {error.length > 60 ? `${error.substring(0, 60)}...` : error}
           </p>
         </div>
@@ -85,19 +85,19 @@ function ConnectionStatus({
 function ConnectionsSkeleton() {
   return (
     <AdminCard>
-      <div className="mb-4 h-7 w-40 animate-pulse rounded bg-gray-200 dark:bg-muted"></div>
+      <div className="mb-4 h-7 w-40 animate-pulse rounded bg-border dark:bg-muted"></div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-lg border border-gray-200 bg-card p-5 shadow-sm dark:border-border"
+            className="rounded-lg border border-border bg-card p-5 shadow-sm dark:border-border"
           >
             <div className="mb-3 flex items-center justify-between">
-              <div className="h-5 w-28 animate-pulse rounded bg-gray-200 dark:bg-muted"></div>
+              <div className="h-5 w-28 animate-pulse rounded bg-border dark:bg-muted"></div>
               <div className="h-2 w-2 animate-pulse rounded-full bg-gray-300 dark:bg-input"></div>
             </div>
             <div className="mb-2">
-              <div className="h-5 w-20 animate-pulse rounded-full bg-gray-200 dark:bg-muted"></div>
+              <div className="h-5 w-20 animate-pulse rounded-full bg-border dark:bg-muted"></div>
             </div>
           </div>
         ))}

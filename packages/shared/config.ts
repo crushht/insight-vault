@@ -214,6 +214,8 @@ const allEnv = z.object({
   // Problem reports
   PROBLEM_REPORTS_EMAIL: z.string().email().optional(),
   EMAIL_VERIFICATION_REQUIRED: stringBool("false"),
+  // 登录会话有效期（天）。桌面版注入 365，网页版默认 30。
+  AUTH_SESSION_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
 
   // Asset storage configuration
   ASSET_STORE_S3_ENDPOINT: z.string().optional(),
@@ -224,7 +226,7 @@ const allEnv = z.object({
   ASSET_STORE_S3_FORCE_PATH_STYLE: stringBool("false"),
 
   // Rate limiting configuration
-  RATE_LIMITING_ENABLED: stringBool("false"),
+  RATE_LIMITING_ENABLED: stringBool("true"),
 
   // Redis configuration
   REDIS_URL: z.string().url().optional(),
@@ -304,7 +306,7 @@ const allEnv = z.object({
     .optional(),
 
   // Database configuration
-  DB_WAL_MODE: stringBool("false"),
+  DB_WAL_MODE: stringBool("true"),
 
   // OpenTelemetry tracing configuration
   OTEL_TRACING_ENABLED: stringBool("false"),
@@ -340,6 +342,7 @@ const serverConfigSchema = allEnv.transform((val, ctx) => {
       disableSignups: val.DISABLE_SIGNUPS,
       disablePasswordAuth: val.DISABLE_PASSWORD_AUTH,
       emailVerificationRequired: val.EMAIL_VERIFICATION_REQUIRED,
+      sessionDays: val.AUTH_SESSION_DAYS,
       trustedOrigins: val.AUTH_TRUSTED_ORIGINS,
       oauth: {
         autoRedirect: val.OAUTH_AUTO_REDIRECT,
@@ -670,6 +673,7 @@ export const clientConfig = {
     disableSignups: serverConfig.auth.disableSignups,
     disablePasswordAuth: serverConfig.auth.disablePasswordAuth,
     oauthAutoRedirect: serverConfig.auth.oauth.autoRedirect,
+    sessionDays: serverConfig.auth.sessionDays,
   },
   turnstile:
     serverConfig.auth.turnstile.enabled && serverConfig.auth.turnstile.siteKey

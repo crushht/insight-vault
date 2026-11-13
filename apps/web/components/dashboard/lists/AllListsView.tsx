@@ -49,11 +49,11 @@ function ListItem({
 }) {
   const accentColors = [
     "bg-sky-500",
-    "bg-slate-400",
+    "bg-muted-foreground",
     "bg-violet-500",
     "bg-rose-500",
     "bg-emerald-500",
-    "bg-amber-500",
+    "bg-warning/100",
   ];
   const accentColor = accentColors[level % accentColors.length];
   const formattedItemCount =
@@ -77,7 +77,7 @@ function ListItem({
           <span
             className={cn(
               "h-9 w-1 shrink-0 rounded-full opacity-70",
-              pinned ? "bg-amber-500" : accentColor,
+              pinned ? "bg-warning/100" : accentColor,
             )}
           />
         </div>
@@ -86,7 +86,7 @@ function ListItem({
             className={cn(
               "flex size-12 shrink-0 items-center justify-center rounded-xl border text-xl shadow-sm",
               pinned
-                ? "border-amber-200 bg-amber-50 dark:border-amber-700 dark:bg-amber-900"
+                ? "border-amber-200 bg-warning/10 dark:border-amber-700 dark:bg-amber-900"
                 : "border-border bg-muted/55",
             )}
           >

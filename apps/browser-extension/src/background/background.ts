@@ -57,20 +57,20 @@ function registerContextMenus(settings: Settings) {
   removeContextMenus();
   chrome.contextMenus.create({
     id: OPEN_KARAKEEP_ID,
-    title: "Open Karakeep",
+    title: "打开灵感仓",
     contexts: ["action"],
   });
 
   chrome.contextMenus.create({
     id: ADD_LINK_TO_KARAKEEP_ID,
-    title: "Add to Karakeep",
+    title: "添加到灵感仓",
     contexts: ["link", "page", "selection", "image"],
   });
 
   if (settings?.showCountBadge) {
     chrome.contextMenus.create({
       id: VIEW_PAGE_IN_KARAKEEP,
-      title: "View this page in Karakeep",
+      title: "在灵感仓中查看",
       contexts: ["action", "page"],
     });
     if (settings?.useBadgeCache) {

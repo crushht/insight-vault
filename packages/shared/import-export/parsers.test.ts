@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { BookmarkTypes } from "../types/bookmarks";
+
 import { parseImportFile } from "./parsers";
 
 describe("parseNetscapeBookmarkFile", () => {
@@ -730,5 +732,62 @@ https://github.com | GitHub`;
 https://example.com | Example`;
     const { bookmarks } = parseImportFile("onetab", txt);
     expect(bookmarks).toHaveLength(1);
+  });
+});
+
+describe("parseImportFile (raindrop csv)", () => {
+  const csv = [
+    "id,title,note,excerpt,url,folder,tags,created,cover,highlights,lastUpdate",
+    '1,"向量数据库选型",备注,摘要,https://example.com/a,技术,"db,vector",2026-01-02T03:04:05Z,,,',
+    '2,"含,逗号的标题",,,"https://example.com/b",读书,,2026-02-03T00:00:00Z,,,',
+    '3,,,,https://example.com/c,,,,,',
+  ].join("\n");
+
+  it("parses basic fields", () => {
+    const res = parseImportFile("raindrop", csv);
+    expect(res.bookmarks).toHaveLength(3);
+    const first = res.bookmarks[0];
+    expect(first.title).toBe("向量数据库选型");
+    expect(first.content).toEqual({
+      type: BookmarkTypes.LINK,
+      url: "https://example.com/a",
+    });
+    expect(first.tags).toEqual(["db", "vector"]);
+    expect(first.notes).toBe("备注");
+    expect(first.paths).toEqual([["技术"]]);
+    expect(first.addDate).toBe(Date.parse("2026-01-02T03:04:05Z"));
+  });
+
+  it("handles commas inside quoted fields", () => {
+    const res = parseImportFile("raindrop", csv);
+    expect(res.bookmarks[1].title).toBe("含,逗号的标题");
+    expect(res.bookmarks[1].content).toEqual({
+      type: BookmarkTypes.LINK,
+      url: "https://example.com/b",
+    });
+  });
+
+  it("falls back to url when the title is empty", () => {
+    const res = parseImportFile("raindrop", csv);
+    const third = res.bookmarks.find(
+      (b) => b.content?.type === BookmarkTypes.LINK && b.content.url === "https://example.com/c",
+    );
+    expect(third?.title).toBe("https://example.com/c");
+  });
+
+  it("skips rows without a url", () => {
+    const bad = [
+      "url,title,tags",
+      ",只有标题,",
+      "https://ok.example/x,正常,x",
+    ].join("\n");
+    const res = parseImportFile("raindrop", bad);
+    expect(res.bookmarks).toHaveLength(1);
+    expect(res.bookmarks[0].title).toBe("正常");
+  });
+
+  it("returns nothing for a header-only file", () => {
+    const res = parseImportFile("raindrop", "url,title,tags");
+    expect(res.bookmarks).toEqual([]);
   });
 });

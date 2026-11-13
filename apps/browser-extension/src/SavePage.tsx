@@ -213,7 +213,7 @@ export default function SavePage() {
     }
     case "pending": {
       return (
-        <StatusMessage label="Saving to Karakeep…" detail={pendingLabel} />
+        <StatusMessage label="正在保存到灵感仓…" detail={pendingLabel} />
       );
     }
     case "idle": {
@@ -227,7 +227,7 @@ export default function SavePage() {
               handleManualSave();
             }}
           >
-            <h2 className="text-base font-semibold">Save to Karakeep</h2>
+            <h2 className="text-base font-semibold">保存到灵感仓</h2>
             {pendingBookmark.type === BookmarkTypes.LINK && (
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="bookmark-title" className="text-sm font-medium">
@@ -301,7 +301,7 @@ export default function SavePage() {
         );
       }
       return (
-        <StatusMessage label="Saving to Karakeep…" detail={pendingLabel} />
+        <StatusMessage label="正在保存到灵感仓…" detail={pendingLabel} />
       );
     }
   }

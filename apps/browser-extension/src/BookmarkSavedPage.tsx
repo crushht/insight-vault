@@ -102,7 +102,7 @@ export default function BookmarkSavedPage() {
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="text-base font-semibold leading-tight">Hoarded!</p>
           <p className="truncate text-xs text-muted-foreground">
-            {subtitle ?? "Saved to Karakeep"}
+            {subtitle ?? "已保存到灵感仓"}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">

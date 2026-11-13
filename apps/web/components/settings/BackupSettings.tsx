@@ -253,7 +253,7 @@ function BackupRow({ backup }: { backup: z.infer<typeof zBackupSchema> }) {
             title={t("settings.backups.list.status.success")}
             className="flex items-center gap-1"
           >
-            <CheckCircle className="size-4 text-green-600" />
+            <CheckCircle className="size-4 text-success" />
             {t("settings.backups.list.status.success")}
           </span>
         ) : backup.status === "failure" ? (
@@ -266,7 +266,7 @@ function BackupRow({ backup }: { backup: z.infer<typeof zBackupSchema> }) {
                 }
                 className="flex items-center gap-1"
               >
-                <XCircle className="size-4 text-red-600" />
+                <XCircle className="size-4 text-destructive" />
                 {t("settings.backups.list.status.failed")}
               </span>
             </TooltipTrigger>
@@ -274,7 +274,7 @@ function BackupRow({ backup }: { backup: z.infer<typeof zBackupSchema> }) {
           </Tooltip>
         ) : (
           <span className="flex items-center gap-1">
-            <div className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+            <div className="size-4 animate-spin rounded-full border-2 border-border border-t-gray-600" />
             {t("settings.backups.list.status.pending")}
           </span>
         )}

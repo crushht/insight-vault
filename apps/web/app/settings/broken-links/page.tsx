@@ -62,7 +62,7 @@ const categoryIcons = {
 };
 type Category = (typeof categories)[number];
 const issueClass = {
-  blocked: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  blocked: "bg-warning/10 text-warning dark:text-warning",
   missing: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
   server: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
   failed: "bg-muted text-muted-foreground",
@@ -222,7 +222,7 @@ export default function BrokenLinksPage() {
               className={cn(
                 "rounded-xl border bg-card p-4 text-left transition-colors hover:border-muted-foreground/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring sm:p-5",
                 category === value &&
-                  "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40",
+                  "border-brand-100 bg-brand-50 dark:border-brand-700 dark:bg-brand-900/40",
               )}
             >
               <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
@@ -230,7 +230,7 @@ export default function BrokenLinksPage() {
                 <Icon
                   className={cn(
                     "size-4",
-                    value === "blocked" && "text-amber-500",
+                    value === "blocked" && "text-warning",
                     value === "missing" && "text-rose-500",
                   )}
                 />
@@ -249,8 +249,8 @@ export default function BrokenLinksPage() {
           );
         })}
       </div>
-      <div className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm">
-        <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+      <div className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-warning/100/5 px-4 py-3 text-sm">
+        <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning dark:text-warning" />
         <p className="text-muted-foreground">
           {t("settings.broken_links.blocked_hint")}
         </p>
@@ -411,7 +411,7 @@ export default function BrokenLinksPage() {
                 return (
                   <TableRow
                     key={bookmark.id}
-                    className="data-[state=selected]:bg-blue-50 dark:data-[state=selected]:bg-blue-950/40"
+                    className="data-[state=selected]:bg-brand-50 dark:data-[state=selected]:bg-brand-900/40"
                     data-state={
                       selected.has(bookmark.id) ? "selected" : undefined
                     }

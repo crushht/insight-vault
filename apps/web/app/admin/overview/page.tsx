@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import BasicStats from "@/components/admin/BasicStats";
 import ServiceConnections from "@/components/admin/ServiceConnections";
@@ -7,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // oxlint-disable-next-line rules-of-hooks
   const { t } = await useTranslation();
   return {
-    title: `${t("admin.admin_settings")} | Karakeep`,
+    title: `${t("admin.admin_settings")} | ${BRAND.nameZh}`,
   };
 }
 

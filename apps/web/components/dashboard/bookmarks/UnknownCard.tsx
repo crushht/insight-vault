@@ -25,9 +25,9 @@ export default function UnknownCard({
       bookmarkIndex={bookmarkIndex}
       wrapTags={false}
       image={(_layout) => (
-        <div className="flex size-full flex-1 flex-col items-center justify-center bg-red-50 dark:bg-red-950/10">
-          <AlertCircle className="mb-3 h-10 w-10 text-red-500" />
-          <h3 className="font-medium text-red-700 dark:text-red-400">
+        <div className="flex size-full flex-1 flex-col items-center justify-center bg-destructive/10 dark:bg-destructive/10/10">
+          <AlertCircle className="mb-3 h-10 w-10 text-destructive" />
+          <h3 className="font-medium text-destructive dark:text-destructive">
             {t("common.something_went_wrong")}
           </h3>
         </div>
