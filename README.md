@@ -1,34 +1,90 @@
+<div align="center">
+
 # 灵感仓 · INSIGHT VAULT
 
-> 当前版本 **1.1.0**（2026-11-13）· Windows 安装包 147 MB · 浏览器扩展 1.3.0
->
-> 把互联网收进仓库，让 AI 替你读懂它。
-> AI 个人知识管理系统：收藏网页 / 图片 / PDF / 笔记 → 自动整理 → 语义检索 → 带引用的 AI 回答 → 写成东西。
+**把互联网收进仓库，让 AI 替你读懂它。**
 
-本仓库基于开源项目 [Karakeep](https://github.com/karakeep-app/karakeep)（commit `fc22787`）改造，
-保留其成熟的抓取、存储、队列与全端架构，在其上做品牌重塑与能力扩展。
+收藏网页 / 图片 / PDF / 笔记 → 自动抓取归档 → 分块检索 → 带引用的 AI 回答 → 写出来。
+
+<p>
+  <img alt="version" src="https://img.shields.io/badge/version-1.1.0-0B6E6E">
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows">
+  <img alt="desktop" src="https://img.shields.io/badge/desktop-Electron%2045-47848F?logo=electron">
+  <img alt="web" src="https://img.shields.io/badge/web-Next.js%2016-black?logo=next.js">
+  <img alt="db" src="https://img.shields.io/badge/db-SQLite%20(WAL)-003B57?logo=sqlite">
+  <img alt="license" src="https://img.shields.io/badge/license-AGPL--3.0-blue">
+</p>
+
+<img src="docs/screenshots/bookmarks.png" alt="收藏库" width="880">
+
+</div>
 
 ---
 
-## 当前状态
+## 这是什么
 
-| 阶段 | 内容 | 状态 |
-|---|---|---|
-| P1 | 完整技术审计（9 份文档 + 5 份审计） | ✅ |
-| P2 | 品牌与前端重构 | ✅ 完成（含官网） |
-| P3 | 收藏与知识管理 | 🟢 含 4 个中国源、Raindrop 导入、导出、无 Meili 时搜索降级 |
-| P4 | 组织与协作 | 🟢 关键项完成 |
-| P5 | AI 知识引擎 | 🟢 分块 / RAG / 对话 / 引用回跳 / 真流式（**链路已用 mock 验证，只差真模型**） |
-| P6 | 图谱 / 专题 / 创作 / 阅读台 | 🟢 全部可用（含表格视图、生成历史、Markdown 导出） |
-| P7 | 商业化（订单 / 权益 / 会员中心） | 🟡 闭环可演示，缺真实支付通道 |
-| P8 | 跨平台 | 🟢 Web + 浏览器扩展 + PWA + **Windows 桌面版（Electron）** |
-| P9 | 交付与部署 | 🟢 部署 / 使用 / 交接 / 交付 / 验收文档 + 一键启动 + **9/9 主链路自检** |
+一个**装在自己电脑上的** AI 知识库。你把东西扔进去，它负责抓回来、存下来、切好、找得到，并且**回答问题时告诉你这句话出自哪一段**。
+
+和常见方案的区别：
+
+| | 灵感仓 | 在线收藏服务 | 纯笔记软件 |
+|---|---|---|---|
+| 数据在哪 | 自己电脑的 SQLite，随时可导出/备份 | 厂商服务器 | 自己电脑 |
+| AI 用什么模型 | **你自己的 Key**（DeepSeek / 通义 / Kimi / 智谱 / OpenAI / 硅基流动 / Ollama 都行） | 厂商定价 | 多数没有 |
+| 断网还能用 | 能（PWA 离线壳，缓存页可开） | 不能 | 能 |
+| 回答有出处 | **有**，`[1]` 可点开原文片段 | 有的没有 | 无 |
+| 收费模式 | 不卖订阅（模型自备 + 自愿打赏） | 订阅 | 买断/订阅 |
+
+> 底座是开源项目 [Karakeep](https://github.com/karakeep-app/karakeep)（commit `fc22787`）——成熟的抓取、队列与全端架构，我们在它上面做品牌重塑、桌面化、中文内容源适配与能力扩展。
+
+---
+
+## 功能
+
+**采集**
+
+- 🌐 一键收藏网页（浏览器扩展 / 快捷键 `Ctrl+Shift+K` / 粘贴链接自动识别）
+- 📝 原生笔记、图片、PDF、Markdown 文件直接拖进来自动入库
+- 📥 批量导入：Raindrop、Pocket、Matter、Omnivore、Instapaper、Linkwarden、HTML 书签、Tab Session Manager
+- 📡 RSS 订阅自动收集
+
+**整理**
+
+- 🗂️ 收藏夹 / 标签 / 高亮 / 归档 / 收藏（星标）
+- 🤖 AI 自动打标签与摘要（可开关，失败会回退到草稿不阻塞）
+- 🔍 规则引擎：按条件自动打标、归档、加列表
+- 🧹 重复标签合并、失效链接清理
+
+**检索**
+
+- 🔎 全文搜索（标题 / 正文 / 笔记 / 标签）＋ 查询语言（`is:image`、`is:pdf`、`is:video`、`tag:xxx`、`list:xxx`）
+- 🧠 语义检索：正文切块 + 向量召回（没有 Meilisearch 时降级为 SQL 匹配，正文照样能搜）
+- 🕸️ 知识图谱：实体与关系可视化，1000 个节点也能拖动（空间网格布局，823ms → 72ms）
+
+**AI**
+
+- 💬 对话问答：跨收藏检索，回答带 `[n]` 引用
+- 📖 阅读台「就这篇提问」：只在当前这篇的分块里找，不串味
+- ✍️ 智能专题 / 创作工作台：把多篇收藏写成结构化长文
+- 🔌 任何 OpenAI 兼容端点都能接（本地网关、Ollama、各家云）
+
+**阅读与体验**
+
+- 📱 PWA：可装到桌面，断网能打开缓存页
+- 🖨️ 阅读模式：字号 / 字体 / 行距可调，支持打印
+- 🌗 深/浅色主题、中英双语界面、键盘可达（Tab 能走完主要操作）
+
+**数据自主**
+
+- 💾 一键备份（打包 JSON 到 zip）→ 删库 → 走导入流水线可完整恢复
+- 📤 导出 JSON / Markdown / Netscape 书签，换机器不锁死
+- 🔐 全部本地：SQLite + 本地文件存储，不依赖任何云服务
 
 ---
 
 ## 界面
 
-| 收藏库（分类直达 + 快速新建） | AI 对话（带引用） |
+| 收藏库（分类直达 + 随手记） | AI 对话（回答带引用） |
 |---|---|
 | ![收藏库](docs/screenshots/bookmarks.png) | ![AI 对话](docs/screenshots/chat.png) |
 
@@ -44,165 +100,117 @@
 |---|---|
 | ![登录](docs/screenshots/login.png) | ![注册](docs/screenshots/register.png) |
 
-| 支持我们（模型自备 + 自愿打赏） |
-|---|
-| ![支持我们](docs/screenshots/support.png) |
-
-> 截图来自本机实际运行（1440×900），不是设计稿。
-
-详细进度见 [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md)，逐轮变更见 [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md)，
-交付验收见 [docs/FINAL_ACCEPTANCE.md](docs/FINAL_ACCEPTANCE.md)。
+> 截图都是本机实跑（1440×900），不是设计稿。
 
 ---
 
 ## 快速开始
 
+### 方式一：Windows 安装包（推荐）
+
+1. 去 [Releases](https://github.com/crushht/insight-vault/releases) 下载 `InsightVault-1.1.0-win-x64.exe`
+2. 双击安装（可选安装目录），首次启动会问你数据放哪
+3. 注册：填邮箱 → 点「发送验证码」→ 填 6 位码 → 设密码
+
+   没配 SMTP 时，验证码会**直接显示在页面上**（只对本机回环地址生效），所以不配邮件也能用。
+4. 登录一次就记住（桌面版会话 365 天），以后打开直接进
+
+> 首次运行会有 Windows SmartScreen 提示（未做代码签名），点「更多信息 → 仍要运行」即可。
+
+### 方式二：源码跑
+
+要求：Node.js 22+ 与 pnpm 11（本机开发用的是 Node 24）。
+
 ```bash
-corepack enable
+git clone https://github.com/crushht/insight-vault.git
+cd insight-vault
 pnpm install
 
-cp .env.sample .env
-# 必填：DATA_DIR、NEXTAUTH_SECRET（openssl rand -base64 36）
+# 必填：数据目录 + 会话密钥
+export DATA_DIR="$PWD/.data"
+export NEXTAUTH_SECRET="$(openssl rand -base64 36)"
 
-pnpm --filter @karakeep/db run migrate
-
-pnpm --filter @karakeep/web run dev         # http://localhost:3000
-pnpm --filter @karakeep/workers run start   # 12 个队列消费者
+pnpm --filter @karakeep/db run migrate        # 建库
+pnpm dev:web                                  # http://localhost:3000
+pnpm dev:workers                              # 另开一个终端：抓取 / 切块 / AI 任务
 ```
 
-第一个注册的账号自动成为管理员。
-
-### 账号与登录
-
-| 场景 | 怎么做 |
-|---|---|
-| 注册 | 填昵称、邮箱、密码，点「发送验证码」，把邮件里的 6 位数字填进去 → **注册完成即登录** |
-| 登录 | 只要 **邮箱 + 密码**；上一次用过的邮箱会自动填好，只需补密码 |
-| 保持登录 | 默认勾选「在这台设备上保持登录（30 天）」；桌面版是 **365 天**（`AUTH_SESSION_DAYS`），登录一次管一年 |
-| 免密码登录 | 登录页折叠入口「用邮箱验证码」：发 6 位码 → 填码即登录 |
-| 忘记密码 | 邮件里的重置链接（默认 1 小时有效） |
-| 没配 SMTP | 桌面版 / 本机访问时自动进入**本地模式**：验证码直接显示并填入（仅回环地址可用；公网实例不启用） |
-
-> 验证码：注册码 15 分钟、登录码 5 分钟，一次性消费；同邮箱 60 秒冷却、每小时最多 8 次。
-> SMTP 在 `.env` 里配（`SMTP_HOST/PORT/SECURE/USER/PASSWORD/FROM`）；桌面版可在托盘菜单「邮箱服务设置」里填。
+Docker / Kubernetes 编排文件在 `docker/`、`charts/`、`kubernetes/`（继承自上游，本机未实测，仅供参考）。
 
 ---
 
-## 桌面版（Windows）
+## 配置 AI（模型自备）
 
-安装包内置 Web 服务、后台任务与 SQLite，装完双击即用，不需要额外装 Node 或数据库。
+打开 **设置 → AI**，选一个预设或填自定义端点：
 
-| 能力 | 说明 |
-|---|---|
-| 启动画面 | 服务就绪前有进度反馈，不再「双击没反应」 |
-| 托盘常驻 | 关窗口不退出（后台继续抓取），托盘可打开 / 快速收藏剪贴板链接 / 重启服务 / 打开数据与日志目录 |
-| 全局快捷键 | `Ctrl+Shift+K` 随时唤起窗口 |
-| 服务自恢复 | web / workers 意外退出会被自动拉起（最多 3 次，之后弹窗提示手动重启） |
-| 记住登录 | 会话写在本地浏览器分区，重开应用仍是登录态 |
-| 邮箱服务 | 托盘 →「邮箱服务设置（SMTP）」填一次，验证码就真的发邮件；不填则走本地模式 |
-| 数据位置 | `%APPDATA%\InsightVault\data`（SQLite + 资产），日志在同目录 `logs\` |
-
-构建（在仓库根目录）：
-
-```bash
-pnpm --filter @karakeep/web run build        # 产出 .next/standalone
-pnpm --filter @karakeep/workers run build    # 产出 workers/dist
-cd apps/desktop && npx electron-builder --win --x64
-# 产物：apps/desktop/release/InsightVault-<version>-win-x64.exe
-```
-
-> 已知限制：未做代码签名（首次运行会有 SmartScreen 提示）；macOS / Linux 的打包配置已写好但未实测。
-
-
-可选依赖：
-
-| 依赖 | 作用 | 不装会怎样 |
+| 预设 | Base URL | 说明 |
 |---|---|---|
-| Meilisearch | 全文 + 向量检索 | 搜索降级为 SQL LIKE（能用，但无相关度排序与高亮） |
-| Headless Chrome | 抓取 SPA / 登录墙页面 | 降级为纯 HTTP 抓取 |
-| AI Key（OpenAI 兼容 / Ollama） | 标签 / 摘要 / 对话 | AI 功能返回「未配置」 |
+| DeepSeek | `https://api.deepseek.com/v1` | 便宜、中文好 |
+| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | 阿里云 |
+| Kimi | `https://api.moonshot.cn/v1` | 长上下文 |
+| 智谱 | `https://open.bigmodel.cn/api/paas/v4` | GLM 系列 |
+| 硅基流动 | `https://api.siliconflow.cn/v1` | 多模型聚合 |
+| OpenAI | `https://api.openai.com/v1` | 官方 |
+| Ollama | `http://localhost:11434/v1` | 完全本地、不用 Key |
+
+Key 存在 `${DATA_DIR}/ai-config.json`，**用 AES-256-GCM 加密**（密钥由 `NEXTAUTH_SECRET` 派生），不进 `.env`、不进代码库。
+
+没配 Key 也能用：搜索、抓取、阅读、导入导出、图谱都正常，只有「AI 回答 / 专题 / 自动打标」不可用，界面会明确提示。
 
 ---
 
-## 与上游的差异
+## 架构
 
-### 品牌与体验
+```mermaid
+flowchart LR
+    subgraph 客户端
+        D[桌面版 Electron]
+        W[浏览器 / PWA]
+        X[浏览器扩展]
+    end
 
-- 独立品牌「灵感仓 INSIGHT VAULT」+ 自研品牌标记（方块 + AI 渐变光束）
-- 完整 design token 层（`tooling/tailwind/tokens.css`）：品牌色、字号、圆角、阴影、动效
-- **默认中文**（上游默认英文）；E2E 注入语言 cookie 保持英文断言
-- 认证四页（登录 / 注册 / 忘记密码 / 重置密码）+ 邀请页全部中文化
+    subgraph 本机服务
+        N[Next.js 16<br/>App Router + tRPC]
+        WK[Workers<br/>抓取 / 切块 / AI / 备份]
+        Q[(队列 liteque)]
+        DB[(SQLite WAL)]
+        FS[本地文件存储]
+    end
 
-### 能力扩展
+    AI[OpenAI 兼容端点<br/>自备 Key]
 
-| 能力 | 说明 |
-|---|---|
-| 内容形态分类 | 侧栏直达「图片 / 视频 / 文章 / PDF / 文件」，底座是查询语言 `is:image` / `is:pdf` / `is:video`（可组合，如 `is:link -is:video`） |
-| AI 开箱配置 | 设置 → AI 里一键填入 DeepSeek / 通义 / Kimi / 智谱 / OpenAI / 硅基流动 / Ollama 的地址与模型名，补 Key 即用，可「测试连接」 |
-| 搜索更省事 | 空查询时给 6 个可点示例（图片 / 视频 / PDF / 收藏 / 有高亮 / 没看完的链接），并记住本机最近 8 条搜索 |
-| 阅读台提问 | `/reader/<id>` 右侧「就这篇提问」：只在这篇的分块里检索，回答带 `[n]` 引用可点开原文 |
-| PWA 离线 | 手写 Service Worker：页面网络优先 + 静态资源缓存优先，断网仍能打开缓存页与离线兜底页 |
-| 浏览器扩展 | MV3，一键收藏当前页 / 选中文字 / 图片；`pnpm test:ext` 校验构建与加载 |
-| 中国内容源适配器 | 微信公众号（`#js_content` 直取）、B 站、知乎、小红书，均带降级路径 |
-| URL 归一化去重 | 剥离 `utm_*` / `spm_*` / `share_token` 后判重 |
-| 防盗链 Referer | 抓图自动补页面 origin，微信/小红书封面可下载 |
-| 语义分块 | 段落→句子切分，500–800 token，15% 重叠，保留原文偏移 |
-| RAG 拼装 | 稳定引用编号、prompt 生成、引用越界校验 |
-| AI 对话 | `/dashboard/chat`：SSE 流式 + 引用 `[n]` 可点击回跳；无 Key 时明确回答「没有相关内容」 |
-| 知识图谱 | `/dashboard/graph`：规则抽取 + 力导向 SVG + **表格视图**（无障碍替代） |
-| 支持我们 | `/dashboard/support`（原会员中心）：**模型自备说明 + 微信打赏码**；不卖订阅、无额度墙 |
-| 订单状态机 | 幂等、禁止跳步、禁止倒退 |
-
-### 稳定性修复（来自审计）
-
-- SQLite 开启 WAL + `busy_timeout=5000`（双进程写库不再偶发失败）
-- 全页归档移到后置作业之前且失败不致命（避免重复 AI 推断与重复 webhook）
-- 限流默认开启（此前语义搜索无任何限制）
-
----
-
-## 目录结构
-
-```
-apps/
-  web                 Next.js 16 App Router + Hono(/api)
-  workers             12 个队列消费者
-  browser-extension   浏览器扩展（已品牌化）
-  mobile              Expo RN 客户端（未改造）
-  cli / mcp           命令行与 MCP server
-packages/
-  db                  Drizzle schema（101 个迁移）
-  trpc                业务核心（含新增 chat / graph / payment）
-  shared              配置、推理、分块、RAG、URL 归一化、实体抽取、订单状态机
-  shared-server       队列实例、插件加载、tracing
-  shared-react        跨端 hooks 与少量 UI
-  plugins             5 类插件（资产/搜索/队列/限流/向量）
-docs/                 产品与工程文档
-tooling/tailwind      design token 单一真源
+    D --> N
+    W --> N
+    X -->|API Key| N
+    N <--> DB
+    N --> Q
+    WK <--> Q
+    WK <--> DB
+    WK --> FS
+    WK --> AI
+    N --> AI
 ```
 
+- **一次写入、两条检索路**：正文切块写 `bookmarkChunks`，有关键词就走 SQL 匹配，有向量库再叠加语义召回
+- **抓取与推理都在 workers**：web 进程只管请求，重活丢队列，桌面版会在后台一并拉起
+- **所有产物本地**：SQLite + 本地文件，没有外部依赖，备份就是打包两个东西
+
 ---
 
-## 文档
+## 技术栈
 
-| 文档 | 内容 |
+| 层 | 选型 |
 |---|---|
-| [PRODUCT_REQUIREMENTS](docs/PRODUCT_REQUIREMENTS.md) | 定位、用户、信息架构、60+ 条需求与验收标准 |
-| [TECHNICAL_AUDIT](docs/TECHNICAL_AUDIT.md) | 审计总纲：规模、模块结论、缺陷、运行验证 |
-| [ARCHITECTURE](docs/ARCHITECTURE.md) | As-Is / To-Be 架构、链路图、扩展点 |
-| [DATABASE_DESIGN](docs/DATABASE_DESIGN.md) | 表字典、索引、迁移纪律、扩展 DDL |
-| [UI_DESIGN_SYSTEM](docs/UI_DESIGN_SYSTEM.md) | 设计系统与可落地 CSS |
-| [FEATURE_MATRIX](docs/FEATURE_MATRIX.md) | 现状 vs 目标逐项对照 |
-| [DEVELOPMENT_ROADMAP](docs/DEVELOPMENT_ROADMAP.md) | P1–P9 任务与里程碑 |
-| [TEST_PLAN](docs/TEST_PLAN.md) | 分层策略、用例矩阵、数据隔离、CI 门槛 |
-| [DECISIONS](docs/DECISIONS.md) | 19 条 ADR |
-| [DEPLOYMENT](docs/DEPLOYMENT.md) | 部署、环境变量、备份恢复、安全清单 |
-| [DELIVERY](docs/DELIVERY.md) | **交付清单**：产物位置、三条命令、验证步骤、已知限制 |
-| [REVIEW](docs/REVIEW.md) | **复查报告**：任务书逐项核对 + 可完善清单（A/B/C 三类） |
-| [HANDOFF](docs/HANDOFF.md) | **交接说明**：5 分钟上手、改过哪里、陷阱清单 |
-| [RELEASE](docs/RELEASE.md) | **发布清单**：仓库设置、打 tag、桌面版出包、发布后自检 |
-| [CHANGELOG](CHANGELOG.md) | 版本变更（含账号体系与桌面版改动） |
-| [docs/audit/](docs/audit/) | 5 份带行号证据的源码审计（3144 行） |
+| Web | Next.js 16（App Router、Turbopack）、React 19、Tailwind CSS |
+| API | tRPC 11 + Zod，端到端类型安全 |
+| 数据 | SQLite（WAL）+ Drizzle ORM（102 个可重放迁移） |
+| 队列 | liteque（SQLite 实现，桌面版免装 Redis） |
+| 认证 | better-auth 1.7 + 自建邮箱验证码 |
+| 抓取 | Puppeteer（可选单文件归档） |
+| AI | 任意 OpenAI 兼容端点（对话 / 摘要 / 标签 / 向量） |
+| 桌面 | Electron 45 + electron-builder（NSIS） |
+| 扩展 | MV3 + Vite + React |
+| 质量 | Vitest（869 个单测）+ Playwright（7 套端到端烟测） |
 
 ---
 
@@ -210,30 +218,94 @@ tooling/tailwind      design token 单一真源
 
 ```
 pnpm typecheck        22 / 22 包通过
-packages/shared       235 个单测通过
-packages/trpc         555 个单测通过（28 文件，含 4 类内容形态筛选 + 阅读台提问 5 条）
-apps/web              79 个单测通过（10 文件，含图谱布局 7 条 / 搜索历史 6 条 / 英文守卫 1 条）
-浏览器回归            13 / 13（Playwright：账号链路 + 新建笔记 + 搜索 + 分类页 + 设置页 + 390 宽 + 键盘可达）
-抓取链路              5 / 5（本地假站点 → 抓取 → 标题改写 → 按标题/正文都能搜到）
-导入导出              6 / 6（30 条导出对账 + UI 上传 Raindrop CSV 经 workers 落库）
-PWA 离线              5 / 5（停掉服务器后仍能打开缓存页与离线页）
-浏览器扩展            10 / 10（构建 + MV3 校验 + 真加载 + popup 中文化）
-AI 链路（mock）       4 / 4（本地 OpenAI 兼容 mock：带引用回答 / 专题 mode=ai / 流式 delta）
-备份恢复              8 / 8（备份成功 → 解包对账 → 删光 → 走导入流水线恢复 3/3）
-接口级账号链路        10 / 10（含重启后 cookie 复用）
-数据库迁移            101 个（可重放）
-本地运行              Web + Workers + SQLite 全链路
+packages/shared       235 个单测
+packages/trpc         555 个单测（含 4 类内容形态筛选、阅读台提问 5 条）
+apps/web              79 个单测（图谱布局 / 搜索历史 / 英文守卫）
+test:e2e:web          13 / 13（账号链路 + 新建 + 搜索 + 分类 + 设置 + 390 宽 + 键盘可达）
+test:capture          5 / 5（本地假站点 → 抓取 → 标题改写 → 正文可搜）
+test:ie               6 / 6（30 条导出对账 + Raindrop CSV 导入经 workers 落库）
+test:pwa              5 / 5（停掉服务器仍能打开缓存页与离线页）
+test:ext              10 / 10（构建 + MV3 校验 + 真加载 + popup 中文化）
+test:backup           8 / 8（备份 → 解包对账 → 删光 → 导入流水线恢复）
+test:ai               4 / 4（本地 mock：引用回答 / 专题 / 流式）
 ```
 
-**未验证**：真实模型推理（没有 Key；已用本地 OpenAI 兼容 mock 跑通协议与链路，见 `pnpm test:ai`）、
-全量 e2e（需 Meilisearch + Chrome）、macOS / Linux 出包。
+逐条断言见 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)。
+
+**已知未验证**：真实第三方模型的长期稳定性（协议与链路已用本地 OpenAI 兼容端点验证）、Meilisearch 全量索引路径、macOS / Linux 出包。
 
 ---
 
-## 许可
+## 文档
 
-沿用上游仓库许可（见 [LICENSE](LICENSE)）。品牌、设计系统与新增模块为本项目原创。
+| 文档 | 内容 |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 架构与模块边界 |
+| [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) | 表结构与索引设计 |
+| [docs/TEST_PLAN.md](docs/TEST_PLAN.md) | 七套测试的逐条断言 |
+| [docs/RELEASE.md](docs/RELEASE.md) | 出包、tag、Release 附件流程 |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 部署与运维 |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | 用户手册 |
+| [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md) | 逐轮开发记录（含踩坑） |
+| [docs/HANDOFF.md](docs/HANDOFF.md) | 交接与已知陷阱 |
 
-> **合规提示**：上游 Karakeep 采用 AGPL-3.0。本仓库以源码形式完整公开，满足其要求；
-> 如果你把本项目改造成对外提供的托管服务，需要同时提供对应版本的源码（AGPL 第 13 条）。
-> 商业分发前请自行确认商标与第三方依赖许可（`pnpm licenses list` 可查）。
+---
+
+## 与上游 Karakeep 的差异
+
+- **桌面化**：Electron 打包、数据目录迁移、单实例锁、托盘、`Ctrl+Shift+K` 全局快捷键、SMTP 设置窗口、启动闪屏
+- **账号体系**：邮箱 + 密码登录，注册收 6 位验证码；桌面版会话 365 天，登录一次长期有效
+- **中文内容源**：微信公众号（`#js_content` 直取）、B 站、知乎、小红书适配器，均带降级路径
+- **能力扩展**：内容形态分类直达、知识图谱性能优化、阅读台提问、PWA 离线、AI 预设面板、导入导出与备份恢复的端到端验证
+- **工程治理**：`jsx-a11y` 警告清零、界面英文清扫 + 防回潮测试、七套可重跑的烟测脚本
+
+---
+
+## 路线图
+
+- [x] 账号体系：邮箱密码登录 + 验证码注册 + 长期会话
+- [x] 桌面版：Windows 安装包、托盘、快捷键、数据迁移
+- [x] 内容形态分类、知识图谱性能、阅读台提问、PWA 离线
+- [x] 导入导出 / 备份恢复 / AI 链路的端到端验证
+- [ ] 真实模型长期回归（需要可用的 Key）
+- [ ] GitHub Actions 全绿（需要仓库权限与 runner 实测）
+- [ ] 代码签名 + 自动更新（需要证书与发布渠道）
+- [ ] PDF 智能阅读 + 独立 OCR 通道（需要视觉模型 Key）
+- [ ] macOS / Linux 出包实测
+
+---
+
+## 常见问题
+
+**Q：没配 AI，能用吗？**
+能。抓取、整理、搜索、阅读、图谱、导入导出、备份恢复都正常，只有 AI 回答/专题/自动打标不可用，界面会提示「还没配置 AI 模型」并给入口。
+
+**Q：数据存在哪？换电脑怎么办？**
+桌面版在 `%APPDATA%\InsightVault\data`。换机器：设置 → 备份 → 生成备份 → 在新机器用「导入」把 JSON 导回去（这条路径有 8 条烟测兜着）。
+
+**Q：一定要 Meilisearch 吗？**
+不。没有 Meilisearch 时搜索降级为 SQL 匹配（标题、正文、笔记、标签都能命中），只是没有拼写容错与排序加权。
+
+**Q：浏览器扩展怎么装？**
+扩展目录 `apps/browser-extension`：`pnpm --filter @karakeep/browser-extension run build` → 打开 Chrome/Edge 的「扩展管理」→ 开发者模式 → 加载已解压扩展 → 选 `dist/`。首次使用填你的服务地址（默认 `http://localhost:3000`）与 API Key。
+
+**Q：会和上游 Karakeep 冲突吗？**
+不会。这是独立仓库（AGPL-3.0），保留上游版权与许可，改动记录在 `CHANGELOG.md` 与 `docs/PHASE_2_REPORT.md`。
+
+---
+
+## 参与贡献
+
+- 提 Bug / 想法：开 [Issue](https://github.com/crushht/insight-vault/issues)，附上「系统状态」页里的诊断信息（设置 → 系统状态 → 复制诊断信息）
+- 提代码：先跑 `pnpm typecheck && pnpm --filter @karakeep/web exec vitest run`，再跑相关烟测
+- 别提交 `.env*`、`*.db`、`apps/desktop/release/`——已在 `.gitignore` 里
+
+如果这个项目对你有用，点个 ⭐️ 是最好的鼓励。
+
+---
+
+## 许可与致谢
+
+- 本项目基于 [Karakeep](https://github.com/karakeep-app/karakeep)（AGPL-3.0）改造，遵循 **AGPL-3.0**，见 [LICENSE](LICENSE)
+- 上游及其依赖作者、Next.js / Electron / Drizzle / better-auth / Tailwind 等开源项目
+- 图标与品牌素材为本项目自制
