@@ -132,3 +132,6 @@
 - 单测：shared 234、trpc 搜索 16、web 8。
 - 数据库迁移 101 个，可重放。
 - Windows 安装包（NSIS）端到端实测：安装 → 启动 → 注册 → 收藏 → 搜索。
+- **发布渠道打通**：仓库公开在 https://github.com/crushht/insight-vault，CI 在 ubuntu-latest 上 3m38s 全绿；
+  安装包作为 `v1.1.0` Release 附件提供（147 MB）。修掉一个会让 CI 秒挂的问题：
+  `.github/workflows/actions.lock` 被 GitHub 当作 workflow 解析 → 移到 `.github/actions.lock`。

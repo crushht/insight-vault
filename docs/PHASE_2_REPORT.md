@@ -8405,3 +8405,26 @@ PASS  恢复后收藏回来了  <- 3/3
 - 资产存储是 `assets/<userId>/<assetId>/` 目录结构，文件名统一叫 `asset.bin`（没有 .zip 后缀）——
   按扩展名找永远找不到，要按**路径里的 assetId** 找。
 - `bookmarks.updateTags` 的 `attach` 要对象（`{tagName}`），不是字符串数组。
+
+---
+
+## 176. 上 GitHub：仓库公开、CI 转绿、安装包作为 Release 附件
+
+**踩到并修掉的坑**：`.github/workflows/` 下有一个 `actions.lock`（`gh actions-lock` 生成的机器文件），
+GitHub 会把该目录下**每个文件**当 workflow 解析，非 YAML 直接 `startup_failure`（0 秒失败）。
+移到 `.github/actions.lock` 后 CI 正常启动。
+
+**分支**：`master` → `main`（`ci.yml` 只在 `push: [main]` 触发，原来推上去永远不会跑），已设为默认分支并删掉远端 `master`。
+
+**结果**
+
+| 项 | 结果 |
+|---|---|
+| 仓库 | https://github.com/crushht/insight-vault（public） |
+| CI | run 43450940662 · ubuntu-latest · **3m38s 全绿**（typecheck + shared/trpc/web 单测 + 生产构建） |
+| Release | `v1.1.0` · 附件 `InsightVault-1.1.0-win-x64.exe`（147,274,034 字节） |
+| 下载校验 | HEAD 302 → 200，`Content-Length: 147274034` |
+
+**说明**：安装包不进 git（`apps/desktop/release/` 已忽略），走 Release 附件才是正确做法——仓库 41.75 MiB，不含二进制。
+另一个发现：tag `v1.1.0` 会触发 `release.yml`（构建 Docker 镜像推 ghcr.io 并创建 Release），
+这条 workflow 从未实测过，所以本轮让它自己跑一遍，结果另记。

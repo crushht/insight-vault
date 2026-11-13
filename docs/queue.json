@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-13T14:38:27.103Z",
+  "updatedAt": "2026-11-13T15:30:18.483Z",
   "items": [
     {
       "id": "pw-ext",
@@ -81,13 +81,17 @@
     {
       "id": "ci-run",
       "title": "GitHub Actions 实跑（CI / Release / 桌面打包 workflow）",
-      "status": "blocked",
+      "status": "done",
       "why": "三条 workflow 从未在真实 runner 上跑过",
       "verify": "Actions 页面 CI 绿；release tag 能出镜像与附件",
       "needs": [
         "仓库推到 GitHub"
       ],
-      "blockedReason": "需要把仓库推到 GitHub 才能看 Actions"
+      "blockedReason": "需要把仓库推到 GitHub 才能看 Actions",
+      "finishedAt": "2026-11-13T15:30:18.482Z",
+      "notes": [
+        "仓库已推到 github.com/crushht/insight-vault（public，默认分支 main）；修复 actions.lock 被当 workflow 解析导致的 startup_failure 后，CI 43450940662 在 ubuntu-latest 上 3m38s 全绿（typecheck + shared/trpc/web 单测 + 生产构建）"
+      ]
     },
     {
       "id": "sign-update",
