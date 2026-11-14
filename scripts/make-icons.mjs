@@ -2,8 +2,8 @@
 //
 //   node scripts/make-icons.mjs
 //
-// 设计：深青渐变圆角底 + 白色「保险柜门」面 + 青色锁孔 + 右上薄荷色星芒（insight）。
-// 纯几何、无中文字形，16px 下仍可辨认。
+// 设计：近黑圆角底 + 一根斜向的「/」渐变条（顶部青、底部靛蓝），带一层柔光。
+// ≤32px 用简化版（加粗斜杠、去掉光晕），保证小尺寸仍可辨认。
 
 import fs from "node:fs";
 import path from "node:path";
@@ -19,92 +19,76 @@ const out = {
   extPublic: path.join(root, "apps", "browser-extension", "public"),
 };
 
-/** 圆形渐变的底：深青到近黑青 */
-const BG_FROM = "#12706E";
-const BG_TO = "#052F34";
-const INK = "#0A3F44";
-const MINT = "#8CF0D0";
+const BG_TOP = "#26292E";
+const BG_BOTTOM = "#0F1114";
+const BAR_TOP = "#7BEBF5";
+const BAR_BOTTOM = "#4A57EE";
 
-function svg({ rounded = true } = {}) {
-  const bg = `
-    <defs>
-      <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
-        <stop offset="0" stop-color="#1A8C86"/>
-        <stop offset="0.45" stop-color="#0B5F60"/>
-        <stop offset="1" stop-color="#03252B"/>
-      </linearGradient>
-      <radialGradient id="glow" cx="0.22" cy="0.12" r="0.85">
-        <stop offset="0" stop-color="#B8FFF0" stop-opacity="0.30"/>
-        <stop offset="0.45" stop-color="#B8FFF0" stop-opacity="0.06"/>
-        <stop offset="1" stop-color="#B8FFF0" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="plate" x1="0.1" y1="0" x2="0.9" y2="1">
-        <stop offset="0" stop-color="#FFFFFF"/>
-        <stop offset="0.6" stop-color="#F2FAF8"/>
-        <stop offset="1" stop-color="#DCEFEC"/>
-      </linearGradient>
-      <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
-        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.15"/>
-      </linearGradient>
-      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#02201F" flood-opacity="0.45"/>
-      </filter>
-    </defs>`;
+const RADIUS = 116;
+const TILT = 18;
 
-  const bgRect = rounded
-    ? `<rect x="0" y="0" width="512" height="512" rx="118" fill="url(#bg)"/>`
-    : `<rect x="0" y="0" width="512" height="512" fill="url(#bg)"/>`;
-
-  const r = rounded ? 118 : 0;
-
+function svg({ rounded = true, glow = true } = {}) {
+  const r = rounded ? RADIUS : 0;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  ${bg}
-  ${bgRect}
-  <rect x="0" y="0" width="512" height="512" rx="${r}" fill="url(#glow)"/>
-  ${rounded ? `<rect x="8" y="8" width="496" height="496" rx="111" fill="none" stroke="url(#edge)" stroke-opacity="0.35" stroke-width="3"/>` : ""}
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="${BG_TOP}"/>
+      <stop offset="0.55" stop-color="#191B1F"/>
+      <stop offset="1" stop-color="${BG_BOTTOM}"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="${BAR_TOP}"/>
+      <stop offset="0.45" stop-color="#4FC9E8"/>
+      <stop offset="1" stop-color="${BAR_BOTTOM}"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.32" r="0.62">
+      <stop offset="0" stop-color="#5FD8F0" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#5FD8F0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
 
-  <!-- 后层半透明面：制造纵深 -->
-  <rect x="96" y="96" width="290" height="290" rx="82" fill="#FFFFFF" fill-opacity="0.13"/>
-  <!-- 前面板 -->
-  <rect x="111" y="111" width="290" height="290" rx="82" fill="url(#plate)" filter="url(#soft)"/>
-  <rect x="111" y="111" width="290" height="290" rx="82" fill="none" stroke="#052F34" stroke-opacity="0.10" stroke-width="2"/>
+  <rect x="0" y="0" width="512" height="512" rx="${r}" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="${r}" fill="url(#halo)"/>
+  ${rounded ? `<rect x="6" y="6" width="500" height="500" rx="${RADIUS - 5}" fill="none" stroke="url(#edge)" stroke-width="3"/>` : ""}
 
-  <!-- 锁盘环 -->
-  <circle cx="256" cy="282" r="84" fill="none" stroke="#0A3F44" stroke-opacity="0.10" stroke-width="9"/>
-  <!-- 薄荷弧：像仪表的进度刻度 -->
-  <circle cx="256" cy="282" r="84" fill="none" stroke="#37D6BA" stroke-width="9" stroke-linecap="round" stroke-dasharray="148 380" transform="rotate(128 256 282)"/>
-  <!-- 锁孔 -->
-  <circle cx="256" cy="252" r="28" fill="#073C42"/>
-  <path d="M246 272 h20 a7 7 0 0 1 7 7 l6 44 a10 10 0 0 1 -10 11 h-26 a10 10 0 0 1 -10 -11 l6 -44 a7 7 0 0 1 7 -7 z" fill="#073C42"/>
-
-  <!-- 星芒（右上，压着面板边缘） -->
-  <path d="M374 112 l12 32 32 12 -32 12 -12 32 -12 -32 -32 -12 32 -12 z" fill="${MINT}"/>
+  <g transform="rotate(${TILT} 256 256)">
+    ${glow ? `<rect x="224" y="118" width="66" height="276" rx="16" fill="${BAR_BOTTOM}" opacity="0.35" filter="url(#blur)"/>` : ""}
+    <rect x="224" y="118" width="66" height="276" rx="16" fill="url(#bar)"/>
+  </g>
 </svg>`;
 }
 
-/** 小尺寸（≤32px）用简化版：放大轮廓、去掉刻度与星芒，保证 16px 还能认出来 */
+/** 小尺寸：斜杠更粗、无光晕、无边描 */
 function svgSimple() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bg2" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0" stop-color="#1A8C86"/>
-      <stop offset="0.5" stop-color="#0B5F60"/>
-      <stop offset="1" stop-color="#03252B"/>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="${BG_TOP}"/>
+      <stop offset="1" stop-color="${BG_BOTTOM}"/>
+    </linearGradient>
+    <linearGradient id="bar2" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="${BAR_TOP}"/>
+      <stop offset="1" stop-color="${BAR_BOTTOM}"/>
     </linearGradient>
   </defs>
-  <rect x="0" y="0" width="512" height="512" rx="118" fill="url(#bg2)"/>
-  <rect x="88" y="88" width="336" height="336" rx="96" fill="#FFFFFF"/>
-  <circle cx="256" cy="238" r="56" fill="#073C42"/>
-  <path d="M232 272 h48 a12 12 0 0 1 12 12 l8 62 a16 16 0 0 1 -16 18 h-56 a16 16 0 0 1 -16 -18 l8 -62 a12 12 0 0 1 12 -12 z" fill="#073C42"/>
+  <rect x="0" y="0" width="512" height="512" rx="${RADIUS}" fill="url(#bg2)"/>
+  <g transform="rotate(${TILT} 256 256)">
+    <rect x="204" y="100" width="104" height="312" rx="24" fill="url(#bar2)"/>
+  </g>
 </svg>`;
 }
 
-const fullSvg = svg({ rounded: true });
+const fullSvg = svg();
 
 async function png(size, rounded = true) {
-  const src =
-    size <= 32 ? svgSimple() : rounded ? fullSvg : svg({ rounded: false });
+  const src = size <= 32 ? svgSimple() : svg({ rounded, glow: size >= 128 });
   return sharp(Buffer.from(src)).resize(size, size, { fit: "contain" }).png().toBuffer();
 }
 
@@ -145,20 +129,14 @@ async function main() {
   const buffers = {};
   for (const s of sizes) buffers[s] = await png(s);
 
-  // web：PNG 各尺寸 + 圆形/方形两张 SVG
   for (const s of [16, 48, 128, 192, 512]) {
     write(path.join(out.webIcons, `logo-${s}.png`), buffers[s]);
   }
   write(path.join(out.webPublic, "icon-512.png"), buffers[512]);
+  write(path.join(out.webPublic, "apple-icon.png"), await png(180));
   write(path.join(out.webIcons, "logo-icon.svg"), Buffer.from(fullSvg));
-  write(
-    path.join(out.webIcons, "logo-icon-dark.svg"),
-    Buffer.from(
-      fullSvg.replace(/url\(#plate\)/g, "#F4FBFA").replaceAll(BG_FROM, "#0E5F5D"),
-    ),
-  );
+  write(path.join(out.webIcons, "logo-icon-dark.svg"), Buffer.from(fullSvg));
 
-  // favicon.ico
   write(
     path.join(out.webPublic, "favicon.ico"),
     buildIco([
@@ -168,20 +146,14 @@ async function main() {
     ]),
   );
 
-  // 桌面打包图标（electron-builder 会自己转 ico）
   write(path.join(out.desktop, "icon.png"), buffers[512]);
 
-  // 浏览器扩展
   for (const s of [16, 48, 128]) {
     write(path.join(out.extPublic, `logo-${s}.png`), buffers[s]);
   }
   write(path.join(out.extPublic, "logo.png"), buffers[128]);
   write(path.join(out.extPublic, "logo-full.png"), buffers[512]);
 
-  // iOS 主屏图标（layout.tsx 里 apple: "/apple-icon.png"）
-  write(path.join(out.webPublic, "apple-icon.png"), await png(180));
-
-  // 预览图（给人和文档看）
   write(path.join(root, "docs", "screenshots", "brand-icon.png"), buffers[512]);
   console.log("done");
 }
