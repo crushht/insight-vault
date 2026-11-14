@@ -8507,3 +8507,25 @@ embeddings / inference / search indexing / admin maintenance / feed / asset prep
 
 **顺带**：安装目录从 `%LOCALAPPDATA%\Programs\InsightVault` 改到 `E:\Apps\InsightVault`
 （`build/installer.nsh` 的 `preInit` 里设默认 `$INSTDIR`），C 盘那份已卸载清空，数据仍在 `%APPDATA%\InsightVault`。
+
+---
+
+## 181. 上传 PDF 后「名字是乱码 + 卡片一片空」
+
+三个问题、三个根因：
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| 文件名变成 `_4____.pdf` | `packages/api/utils/upload.ts` 里的 `data.name.replace(/[^\x20-\x7E]/g, "_")` 把非 ASCII 全替换成下划线，中文名必毁 | 只清理危险字符（斜杠、冒号、星号、问号、引号、尖括号、竖线、控制符），保留中文 |
+| 卡片标题空白 | 资产型收藏没有 title，只能回退到（已损坏的）文件名 | `createBookmark`：ASSET 类型没给 title 时，用去掉扩展名的文件名当标题 |
+| 破图 + 只剩 alt 文字 asset | PDF 缩略图不存在或加载失败时，仍然渲染 `<Image>` | `AssetCard` 加 `onError` 回退：文档图标 + 「PDF · 大小」+ 原文件名，页脚也带上类型与大小 |
+
+验证（临时实例，真上传 + 真渲染）：
+
+```
+上传: 200 | fileName = "产品需求_4.pdf"
+创建书签: 200 | title = "产品需求_4" | content.fileName = "产品需求_4.pdf"
+卡片里出现标题: true / 出现「PDF · 192 B」: true / 无 alt=asset 破图文字: true
+```
+
+截图：`artifacts/asset-card.png`。
