@@ -8529,3 +8529,25 @@ embeddings / inference / search indexing / admin maintenance / feed / asset prep
 ```
 
 截图：`artifacts/asset-card.png`。
+
+---
+
+## 182. 「图标显示不出来」的真因：两个
+
+查了数据库才看清：
+
+```
+bookmark: type=asset, assetType=pdf, title="附件4：发展对象积分申报表", contentLen=533   ← 标题/文件名已经是对的
+assets:   {assetType: bookmarkAsset, size: 465342}
+          {assetType: assetScreenshot, size: 0}      ← 0 字节的「PDF 首页截图」
+```
+
+1. **PDF 首页截图是 0 字节**：`extractAndSavePDFScreenshot` 在缺少 ImageMagick/GraphicsMagick 时仍然把空缓冲写进了库，
+   卡片于是走「有截图」分支去渲染一个空文件 → 破图 + 只剩 alt 文字。
+   修法：worker 里 `byteLength === 0` 直接跳过、不写库；已把用户库里那条 0 字节记录删掉。
+2. **PWA 缓存喂了旧前端**：Service Worker 缓存优先返回 `_next/static/*`，升级后页面还在用上个版本的 chunk，
+   所以我改的卡片代码在界面上「没生效」（截图里 alt 还是老代码的 `asset`）。
+   修法：SW 版本 `v1 → v2`；主进程每次启动 `clearCache()` + 清 `serviceworkers/cachestorage`。
+   本地应用清缓存没有网络代价，这笔账很划算。
+
+验证：重装启动后截图（`artifacts/` 里那张窗口图）——卡片显示文档图标 + 标题「附件4：发展对象积分申报表」，无破图。

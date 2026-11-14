@@ -7,7 +7,7 @@
 //
 // 退出登录时前端会 postMessage({type:"clear"})，清掉所有缓存，避免共用浏览器时看到上一个账号的页面。
 
-const VERSION = "insight-vault-v1";
+const VERSION = "insight-vault-v2";
 const SHELL_CACHE = `${VERSION}-shell`;
 const STATIC_CACHE = `${VERSION}-static`;
 const SHELL_URLS = ["/offline", "/icon-512.png", "/manifest.webmanifest"];

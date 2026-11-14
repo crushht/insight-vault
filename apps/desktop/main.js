@@ -854,6 +854,24 @@ function openPath(p) {
   void shell.openPath(p).catch(() => {});
 }
 
+/**
+ * 每次启动清一次前端缓存。
+ * 桌面版是本地应用，静态资源就在机器上，清缓存没有网络代价；
+ * 不清的话升级后 PWA 的 Service Worker 会把旧的 _next/static chunk 一直喂给页面，
+ * 用户看到的还是上个版本的界面（我们被这个坑过一次：卡片明明改了，界面没变）。
+ */
+async function clearWebCaches() {
+  try {
+    const ses = require("electron").session.defaultSession;
+    await ses.clearCache();
+    await ses.clearStorageData({
+      storages: ["serviceworkers", "cachestorage"],
+    });
+  } catch (e) {
+    console.warn("[cache] 清理失败（忽略）:", e?.message ?? e);
+  }
+}
+
 // ---------------- 自动更新 ----------------
 //
 // 打包后从发布渠道拉 latest.yml 比对版本；发现新版本后台下载，下完提示重启安装。
@@ -1116,6 +1134,7 @@ if (!gotLock) {
       return;
     }
 
+    await clearWebCaches();
     await createWindow();
     createTray();
     registerShortcuts();
