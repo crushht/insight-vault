@@ -8483,3 +8483,27 @@ PASS  图片 LLM OCR 读出截图文字     <- 38 字符
 **产出**：web 图标 16/48/128/192/512 + `icon-512.png` + `apple-icon.png` + `favicon.ico`（内含 16/32/48）、
 桌面 `build/icon.png`（electron-builder 转 ico）、扩展 `logo-16/48/128` + `logo.png` + `logo-full.png`、
 文档预览 `docs/screenshots/brand-icon.png`。
+
+
+---
+
+## 180. 修「本地服务已停止」：workers 在安装包里根本起不来
+
+**现象**：桌面版弹「本地服务连续退出 3 次，已停止自动重启」。
+
+**根因链**（一个接一个冒出来，全是「打包后 dist 找不到模块」）：
+
+| # | 报错 | 原因 | 修法 |
+|---|---|---|---|
+| 1 | `Cannot find package 'winston'` | workers 的 `dist` 里留着一堆 external 依赖（winston / drizzle-orm / zod / @trpc/server …），但安装包只拷了 `dist`，没有 `node_modules` | tsdown 改成「除原生模块外全部打包」：`noExternal: [/./]`，`external: [better-sqlite3, liteque, sharp, re2, node-cron, patchright…]` |
+| 2 | `Can't find meta/_journal.json` | liteque 用 `import.meta.url + "drizzle"` 找自己的迁移；被打进 dist 后路径变成 `resources/workers/drizzle` | 打包时把 `node_modules/liteque/dist/drizzle` 拷到 `resources/workers/drizzle` |
+| 3 | `__dirname is not defined in ES module scope` | node-cron 是 CJS，被打进 ESM 后 `__dirname` 失效 | node-cron 改回 external，随包放 `workers/node_modules/node-cron`（连带 `uuid`） |
+
+**最终随包的外置依赖**：`better-sqlite3 / node-addon-api / liteque(drizzle) / node-cron / uuid / re2 / sharp / @img/sharp-win32-x64 / @napi-rs/canvas(+win32-x64-msvc) / patchright / patchright-core / playwright-core`。
+
+**验证**：安装版启动后 `workers.log` 依次打印
+embeddings / inference / search indexing / admin maintenance / feed / asset preprocessing / webhook / rule engine / backup / video / crawler / import 全部 worker，
+并 `Listening on http://127.0.0.1:<port>`；`workers-err.log` 为空；`/api/health` 200。
+
+**顺带**：安装目录从 `%LOCALAPPDATA%\Programs\InsightVault` 改到 `E:\Apps\InsightVault`
+（`build/installer.nsh` 的 `preInit` 里设默认 `$INSTDIR`），C 盘那份已卸载清空，数据仍在 `%APPDATA%\InsightVault`。

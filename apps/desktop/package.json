@@ -77,6 +77,58 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "../../node_modules/better-sqlite3",
+        "to": "workers/node_modules/better-sqlite3"
+      },
+      {
+        "from": "../../node_modules/node-addon-api",
+        "to": "workers/node_modules/node-addon-api"
+      },
+      {
+        "from": "../../node_modules/patchright",
+        "to": "workers/node_modules/patchright"
+      },
+      {
+        "from": "../../node_modules/patchright-core",
+        "to": "workers/node_modules/patchright-core"
+      },
+      {
+        "from": "../../node_modules/playwright-core",
+        "to": "workers/node_modules/playwright-core"
+      },
+      {
+        "from": "../../node_modules/re2",
+        "to": "workers/node_modules/re2"
+      },
+      {
+        "from": "../../node_modules/@napi-rs/canvas",
+        "to": "workers/node_modules/@napi-rs/canvas"
+      },
+      {
+        "from": "../../node_modules/@napi-rs/canvas-win32-x64-msvc",
+        "to": "workers/node_modules/@napi-rs/canvas-win32-x64-msvc"
+      },
+      {
+        "from": "../../node_modules/sharp",
+        "to": "workers/node_modules/sharp"
+      },
+      {
+        "from": "../../node_modules/@img/sharp-win32-x64",
+        "to": "workers/node_modules/@img/sharp-win32-x64"
+      },
+      {
+        "from": "../../node_modules/liteque/dist/drizzle",
+        "to": "workers/drizzle"
+      },
+      {
+        "from": "../../node_modules/node-cron",
+        "to": "workers/node_modules/node-cron"
+      },
+      {
+        "from": "../../node_modules/uuid",
+        "to": "workers/node_modules/uuid"
       }
     ],
     "win": {
@@ -90,7 +142,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "shortcutName": "灵感仓"
+      "shortcutName": "灵感仓",
+      "include": "build/installer.nsh"
     },
     "mac": {
       "target": [

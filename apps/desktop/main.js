@@ -279,6 +279,10 @@ function childEnv() {
     HOSTNAME: "127.0.0.1",
     DATA_DIR: dataDir(),
     NEXTAUTH_URL: `http://127.0.0.1:${PORT}`,
+    // 迁移目录同时给 web / workers：workers 启动时要自己跑 liteque 的队列迁移，
+    // 不给就会挂在 `Can't find meta/_journal.json`。
+    MIGRATIONS_FOLDER: migrationsFolder(),
+    LITEQUE_MIGRATIONS: litequeMigrationsFolder(),
     NEXTAUTH_SECRET: getOrCreateSecret(),
     // 桌面版是单机自用：登录一次管一年，不再每次开都问密码
     AUTH_SESSION_DAYS: "365",
