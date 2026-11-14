@@ -1,7 +1,47 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 355 354" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g transform="matrix(1,0,0,1,-232,-118)">
-        <path d="M565.33,118.79L253.02,118.79C241.46,118.79 232.09,128.16 232.09,139.72L232.09,450.44C232.09,462 241.46,471.37 253.02,471.37L565.33,471.37C576.89,471.37 586.26,462 586.26,450.44L586.26,139.72C586.26,128.16 576.89,118.79 565.33,118.79ZM386.85,419.57C386.85,422.58 384.4,425.03 381.39,425.03L285.11,425.03C282.1,425.03 279.65,422.58 279.65,419.57L279.65,169.43C279.65,166.42 282.1,163.96 285.11,163.96L379.87,163.96C382.88,163.96 385.33,166.41 385.33,169.43L385.33,264.64C385.33,264.64 384.81,305.61 386.85,337.76L386.85,419.58L386.85,419.57ZM537.19,419.57C537.19,423.92 532.36,426.52 528.75,424.14L484.85,395.44C482.95,394.18 480.5,394.25 478.64,395.59L440.16,423.4C438.56,424.59 436.67,424.66 435.07,424.07C433.66,423.07 432.73,421.43 432.73,419.57L432.73,225.34C437.94,224.34 443.73,223.78 450.43,223.78C483.29,223.78 537.2,242.37 537.2,294.78L537.2,419.58L537.19,419.57Z" style="fill:#ffffff;fill-rule:nonzero;"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  
+    <defs>
+      <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
+        <stop offset="0" stop-color="#1A8C86"/>
+        <stop offset="0.45" stop-color="#0B5F60"/>
+        <stop offset="1" stop-color="#03252B"/>
+      </linearGradient>
+      <radialGradient id="glow" cx="0.22" cy="0.12" r="0.85">
+        <stop offset="0" stop-color="#B8FFF0" stop-opacity="0.30"/>
+        <stop offset="0.45" stop-color="#B8FFF0" stop-opacity="0.06"/>
+        <stop offset="1" stop-color="#B8FFF0" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="plate" x1="0.1" y1="0" x2="0.9" y2="1">
+        <stop offset="0" stop-color="#FFFFFF"/>
+        <stop offset="0.6" stop-color="#F2FAF8"/>
+        <stop offset="1" stop-color="#DCEFEC"/>
+      </linearGradient>
+      <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
+        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      </linearGradient>
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#02201F" flood-opacity="0.45"/>
+      </filter>
+    </defs>
+  <rect x="0" y="0" width="512" height="512" rx="118" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="118" fill="url(#glow)"/>
+  <rect x="8" y="8" width="496" height="496" rx="111" fill="none" stroke="url(#edge)" stroke-opacity="0.35" stroke-width="3"/>
+
+  <!-- 后层半透明面：制造纵深 -->
+  <rect x="96" y="96" width="290" height="290" rx="82" fill="#FFFFFF" fill-opacity="0.13"/>
+  <!-- 前面板 -->
+  <rect x="111" y="111" width="290" height="290" rx="82" fill="#F4FBFA" filter="url(#soft)"/>
+  <rect x="111" y="111" width="290" height="290" rx="82" fill="none" stroke="#052F34" stroke-opacity="0.10" stroke-width="2"/>
+
+  <!-- 锁盘环 -->
+  <circle cx="256" cy="282" r="84" fill="none" stroke="#0A3F44" stroke-opacity="0.10" stroke-width="9"/>
+  <!-- 薄荷弧：像仪表的进度刻度 -->
+  <circle cx="256" cy="282" r="84" fill="none" stroke="#37D6BA" stroke-width="9" stroke-linecap="round" stroke-dasharray="148 380" transform="rotate(128 256 282)"/>
+  <!-- 锁孔 -->
+  <circle cx="256" cy="252" r="28" fill="#073C42"/>
+  <path d="M246 272 h20 a7 7 0 0 1 7 7 l6 44 a10 10 0 0 1 -10 11 h-26 a10 10 0 0 1 -10 -11 l6 -44 a7 7 0 0 1 7 -7 z" fill="#073C42"/>
+
+  <!-- 星芒（右上，压着面板边缘） -->
+  <path d="M374 112 l12 32 32 12 -32 12 -12 32 -12 -32 -32 -12 32 -12 z" fill="#8CF0D0"/>
 </svg>

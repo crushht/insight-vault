@@ -139,3 +139,5 @@
   图片 OCR 在桌面版默认走视觉模型；`pnpm test:pdf` 3/3（文本层 / 扫描件 / 图片，真模型）。
 - **自动更新**：electron-updater 6.8 + `build.publish=github`，启动 20s 首查、每 6h 复查、后台下载、托盘「检查更新…」；
   `IV_UPDATE_URL` 可指向自建静态源（国内更稳）。代码签名按决定跳过。
+- **品牌图标重做**：换成「保险柜门 + 锁孔 + 薄荷刻度弧 + 星芒」的几何标，≤32px 自动用简化版保证小尺寸可辨认；
+  一个 `scripts/make-icons.mjs` 生成 web / 桌面 / 扩展 / favicon / apple-icon 全套尺寸。
