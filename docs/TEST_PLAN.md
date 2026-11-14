@@ -382,3 +382,13 @@ web + workers 通过 `OPENAI_*` / `EMBEDDING_*` 指向它，然后断言：
 | 3 | 解包后 JSON 里书签数 = 3、列表 ≥1、标签在 |
 | 4 | 删光收藏后搜索为 0（模拟丢失） |
 | 5 | 走 `createImportSession → stage → finalize` 恢复后，3 条全部回来 |
+### 4.1.8 PDF 与 OCR（`pnpm test:pdf`，需要视觉模型）
+
+| # | 断言 |
+|---|---|
+| 1 | 有文本层的 PDF → `bookmarkAssets.content` 含正文（61 字符） |
+| 2 | 扫描件（只有图片的 PDF）→ 视觉 OCR 读出文字（46 字符，metadata 记 `ocr=vision`） |
+| 3 | 图片 → LLM OCR 读出截图文字（38 字符） |
+
+> 前置：`OPENAI_BASE_URL` + `OPENAI_API_KEY` + `INFERENCE_IMAGE_MODEL` 指向一个**支持视觉**的模型；
+> 桌面版默认 `OCR_USE_LLM=true`。渲染页数由 `PDF_OCR_MAX_PAGES`（默认 5）控制。

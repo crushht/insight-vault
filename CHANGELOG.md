@@ -135,3 +135,7 @@
 - **发布渠道打通**：仓库公开在 https://github.com/crushht/insight-vault，CI 在 ubuntu-latest 上 3m38s 全绿；
   安装包作为 `v1.1.0` Release 附件提供（147 MB）。修掉一个会让 CI 秒挂的问题：
   `.github/workflows/actions.lock` 被 GitHub 当作 workflow 解析 → 移到 `.github/actions.lock`。
+- **PDF 扫描件 OCR**：新增兜底路径 —— 无文本层的 PDF 用 pdfjs 渲染前 5 页 + 视觉模型读字（`PDF_OCR_MAX_PAGES` / `PDF_OCR_SCALE` 可调）；
+  图片 OCR 在桌面版默认走视觉模型；`pnpm test:pdf` 3/3（文本层 / 扫描件 / 图片，真模型）。
+- **自动更新**：electron-updater 6.8 + `build.publish=github`，启动 20s 首查、每 6h 复查、后台下载、托盘「检查更新…」；
+  `IV_UPDATE_URL` 可指向自建静态源（国内更稳）。代码签名按决定跳过。

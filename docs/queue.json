@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-13T15:30:18.483Z",
+  "updatedAt": "2026-11-14T05:26:49.028Z",
   "items": [
     {
       "id": "pw-ext",
@@ -70,13 +70,17 @@
     {
       "id": "pdf-ai",
       "title": "PDF 智能阅读 + 独立 OCR 通道",
-      "status": "blocked",
+      "status": "done",
       "why": "任务书点名的能力，现在只能靠视觉模型直接读图",
       "verify": "上传一份 PDF 能出章节要点",
       "needs": [
         "可用的模型 Key（视觉/文本）"
       ],
-      "blockedReason": "需要可用的视觉/文本模型 Key（设置里配好才能验 PDF 章节与 OCR）"
+      "blockedReason": "需要可用的视觉/文本模型 Key（设置里配好才能验 PDF 章节与 OCR）",
+      "finishedAt": "2026-11-14T05:26:48.980Z",
+      "notes": [
+        "视觉模型 deepseek-v4.1-flash 实测可读图（截图文字）；OCR_USE_LLM 开启后图片走 LLM OCR；新增扫描版 PDF 兜底：pdfjs 渲染前 5 页 → 视觉 OCR（cleanPdfText 先清掉 pdf2json 的分页标记）；pnpm test:pdf 3/3（文本层 PDF 61 字符 / 扫描件 46 字符 / 图片 38 字符）"
+      ]
     },
     {
       "id": "ci-run",
@@ -96,13 +100,17 @@
     {
       "id": "sign-update",
       "title": "代码签名 + electron-updater 自动更新",
-      "status": "blocked",
+      "status": "done",
       "why": "首装 SmartScreen 提示；发布后没法自动升级",
       "verify": "装包无警告；改版本后能收到更新提示",
       "needs": [
         "代码签名证书 / 发布渠道"
       ],
-      "blockedReason": "需要代码签名证书与发布渠道"
+      "blockedReason": "需要代码签名证书与发布渠道",
+      "finishedAt": "2026-11-14T05:26:49.027Z",
+      "notes": [
+        "自动更新已完成：electron-updater 6.8 + build.publish=github、托盘「检查更新…」、启动 20s 首查 + 每 6h、后台下载后提示重启、支持 IV_UPDATE_URL 指向自建静态源；代码签名按用户决定跳过（不买证书，首次运行仍是 SmartScreen 提示）"
+      ]
     },
     {
       "id": "a11y-pass",

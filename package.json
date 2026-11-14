@@ -38,7 +38,8 @@
     "test:pwa": "node scripts/e2e-pwa.mjs",
     "test:ext": "node scripts/e2e-extension.mjs",
     "test:ai": "node scripts/e2e-ai-mock.mjs",
-    "test:backup": "node scripts/e2e-backup.mjs"
+    "test:backup": "node scripts/e2e-backup.mjs",
+    "test:pdf": "tsx scripts/e2e-pdf-ocr.mts"
   },
   "devDependencies": {
     "@types/node": "^24",

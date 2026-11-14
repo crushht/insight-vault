@@ -8428,3 +8428,40 @@ GitHub 会把该目录下**每个文件**当 workflow 解析，非 YAML 直接 `
 **说明**：安装包不进 git（`apps/desktop/release/` 已忽略），走 Release 附件才是正确做法——仓库 41.75 MiB，不含二进制。
 另一个发现：tag `v1.1.0` 会触发 `release.yml`（构建 Docker 镜像推 ghcr.io 并创建 Release），
 这条 workflow 从未实测过，所以本轮让它自己跑一遍，结果另记。
+
+---
+
+## 177. PDF 智能阅读 + 扫描件 OCR（视觉模型真跑通）
+
+**先验证能力**：拿一张界面截图直接问 `deepseek-v4.1-flash`「最上面的标题是什么」，它答「灵 感 仓」——
+所以这个模型确实能读图（网关 `/models` 里也标了 `vision: true`、`input_modalities: ["text","image"]`）。
+
+**改了什么**
+
+| 场景 | 之前 | 现在 |
+|---|---|---|
+| 有文本层的 PDF | `pdf2json` 抽文本 ✅ | 一样，但先用 `cleanPdfText()` 清掉 `----Page (n) Break----` 之类的分页标记 |
+| **扫描件（无文本层）** | 直接抛错「PDF includes text and not just images」 | **兜底**：`pdfjs-dist` 把前 N 页渲染成 PNG（`@napi-rs/canvas`）→ 逐页交视觉模型 OCR → 按「【第 n 页】」拼接入库，metadata 记 `ocr: "vision"` |
+| 图片 | Tesseract（默认）或 LLM OCR（需 `OCR_USE_LLM=1`） | 桌面版默认 `OCR_USE_LLM=true`，走视觉模型 |
+
+**可调参数**：`PDF_OCR_MAX_PAGES`（默认 5）、`PDF_OCR_SCALE`（默认 1.6）。
+
+**验证**（`pnpm test:pdf`，真模型，3/3）
+
+```
+PASS  文本层 PDF 抽出正文          <- 61 字符
+PASS  扫描版 PDF 走视觉 OCR 读出文字 <- 46 字符
+PASS  图片 LLM OCR 读出截图文字     <- 38 字符
+```
+
+**踩坑**：
+- pdfjs v6 里 `getDocument()` 返回的是 **loading task**，销毁要 `task.destroy()`，`doc.destroy` 不存在；
+- v6 的 `page.render()` 必须同时传 `canvas` 和 `canvasContext`；
+- `pdf2json.getRawTextContent()` 会给每页塞一行 `----Page (n) Break----`，长度阈值判断会被这行骗过去 → 先清理再判断。
+
+## 178. 自动更新（electron-updater）
+
+- `apps/desktop/package.json`：加 `electron-updater`，`build.publish` 指向 `github: crushht/insight-vault`
+- 主进程：启动 20 秒后首查 + 每 6 小时；发现新版弹一次提示；下载完成弹「立即重启 / 稍后」；托盘菜单加「检查更新…」
+- 支持 `IV_UPDATE_URL` 覆盖更新源（GitHub 在国内不稳时，指向自己的静态空间即可，只需 exe + blockmap + latest.yml 三个文件）
+- 代码签名**按决定跳过**：不买证书，首次运行仍会有 SmartScreen 提示，但更新链路不受影响

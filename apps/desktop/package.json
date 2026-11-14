@@ -105,10 +105,20 @@
       "artifactName": "InsightVault-${version}-linux-${arch}.${ext}"
     },
     "electronVersion": "45.3.0",
-    "icon": "build/icon.png"
+    "icon": "build/icon.png",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "crushht",
+        "repo": "insight-vault"
+      }
+    ]
   },
   "devDependencies": {
     "electron": "45.3.0",
     "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2"
   }
 }

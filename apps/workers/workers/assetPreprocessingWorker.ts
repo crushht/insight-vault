@@ -337,6 +337,100 @@ async function extractAndSaveImageText(
   return true;
 }
 
+/** 扫描版 PDF：把前几页渲染成 PNG，逐页交给视觉模型读字。 */
+async function renderPDFPagesToPngs(
+  buffer: Buffer,
+  maxPages: number,
+  scale: number,
+  jobId: string,
+): Promise<Array<{ page: number; png: Buffer }>> {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const { createCanvas } = await import("@napi-rs/canvas");
+
+  const loadingTask = pdfjs.getDocument({
+    data: new Uint8Array(buffer),
+    useSystemFonts: true,
+    // 只做栅格化，不需要字体数据
+    disableFontFace: true,
+  });
+  const doc = await loadingTask.promise;
+
+  const pages: Array<{ page: number; png: Buffer }> = [];
+  const numPages = Number((doc as { numPages?: number })?.numPages ?? 0);
+  const total = Math.max(1, Math.min(numPages || 1, maxPages));
+  logger.info(
+    `[assetPreprocessing][${jobId}] PDF 共 ${numPages} 页，渲染前 ${total} 页（scale=${scale}）。`,
+  );
+  for (let i = 1; i <= total; i++) {
+    const page = await doc.getPage(i);
+    const viewport = page.getViewport({ scale });
+    const canvas = createCanvas(
+      Math.ceil(viewport.width),
+      Math.ceil(viewport.height),
+    );
+    const ctx = canvas.getContext("2d");
+    await page.render({
+      canvas: canvas as never,
+      canvasContext: ctx as never,
+      viewport,
+    }).promise;
+    pages.push({ page: i, png: canvas.toBuffer("image/png") });
+    page.cleanup();
+  }
+  await loadingTask.destroy();
+  return pages;
+}
+
+async function readScannedPDFText(
+  jobId: string,
+  buffer: Buffer,
+): Promise<{ text: string; pages: number } | null> {
+  const maxPages = Number(process.env.PDF_OCR_MAX_PAGES ?? 5);
+  const scale = Number(process.env.PDF_OCR_SCALE ?? 1.6);
+
+  let pages: Array<{ page: number; png: Buffer }>;
+  try {
+    pages = await renderPDFPagesToPngs(buffer, maxPages, scale, jobId);
+  } catch (e) {
+    logger.warn(
+      `[assetPreprocessing][${jobId}] 渲染扫描版 PDF 失败：${(e as Error)?.message ?? e}`,
+    );
+    return null;
+  }
+  if (pages.length === 0) {
+    logger.warn(`[assetPreprocessing][${jobId}] 没有渲染出任何页面。`);
+    return null;
+  }
+
+  const chunks: string[] = [];
+  for (const { page, png } of pages) {
+    try {
+      const text = await readImageTextWithLLM(png, "image/png");
+      logger.info(
+        `[assetPreprocessing][${jobId}] 第 ${page} 页 PNG ${png.length} 字节，OCR 得到 ${text?.length ?? 0} 字符。`,
+      );
+      if (text?.trim()) {
+        chunks.push(`【第 ${page} 页】\n${text.trim()}`);
+      }
+    } catch (e) {
+      logger.warn(
+        `[assetPreprocessing][${jobId}] 第 ${page} 页 OCR 失败：${(e as Error)?.message ?? e}`,
+      );
+    }
+  }
+  if (chunks.length === 0) return null;
+  return { text: chunks.join("\n\n"), pages: pages.length };
+}
+
+/** pdf2json 会把分页标记和多余空白混进正文；先清干净再判断「有没有文本层」。 */
+function cleanPdfText(raw: string): string {
+  return raw
+    .replace(/-{3,}\s*Page\s*\(\d+\)\s*Break\s*-{3,}/gi, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 async function extractAndSavePDFText(
   jobId: string,
   asset: Buffer,
@@ -356,19 +450,41 @@ async function extractAndSavePDFText(
     `[assetPreprocessing][${jobId}] Attempting to extract text from pdf.`,
   );
   const pdfParse = await readPDFText(asset);
-  if (!pdfParse?.text) {
+  let text = cleanPdfText(pdfParse?.text ?? "");
+  let metadata = pdfParse?.metadata;
+
+  // 没有文本层（扫描件 / 图片拼的 PDF）→ 渲染前几页，交给视觉模型读字
+  if (text.length < 40) {
+    logger.info(
+      `[assetPreprocessing][${jobId}] PDF 文本层几乎为空（${text.length} 字符），尝试视觉 OCR。`,
+    );
+    const ocr = await readScannedPDFText(jobId, asset);
+    if (ocr) {
+      text = ocr.text;
+      metadata = {
+        ...(metadata ?? {}),
+        ocr: "vision",
+        ocrPages: ocr.pages,
+      } as unknown as Record<string, object>;
+      logger.info(
+        `[assetPreprocessing][${jobId}] 视觉 OCR 读到 ${text.length} 字符（${ocr.pages} 页）。`,
+      );
+    }
+  }
+
+  if (!text) {
     throw new Error(
       `[assetPreprocessing][${jobId}] PDF text is empty. Please make sure that the PDF includes text and not just images.`,
     );
   }
   logger.info(
-    `[assetPreprocessing][${jobId}] Extracted ${pdfParse.text.length} characters from pdf.`,
+    `[assetPreprocessing][${jobId}] Extracted ${text.length} characters from pdf.`,
   );
   await db
     .update(bookmarkAssets)
     .set({
-      content: pdfParse.text,
-      metadata: pdfParse.metadata ? JSON.stringify(pdfParse.metadata) : null,
+      content: text,
+      metadata: metadata ? JSON.stringify(metadata) : null,
     })
     .where(eq(bookmarkAssets.id, bookmark.id));
   return true;

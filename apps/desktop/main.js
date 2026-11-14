@@ -32,6 +32,14 @@ const fs = require("node:fs");
 const http = require("node:http");
 const net = require("node:net");
 
+// 自动更新：只有打包后才有意义（dev 下 electron-updater 会去找 dev-app-update.yml）
+let autoUpdater = null;
+try {
+  ({ autoUpdater } = require("electron-updater"));
+} catch {
+  autoUpdater = null;
+}
+
 const PORT = 3210;
 const APP_ID = "app.insightvault.desktop";
 const isDev = !app.isPackaged;
@@ -276,6 +284,8 @@ function childEnv() {
     AUTH_SESSION_DAYS: "365",
     // 桌面版是单机自用：没有 SMTP 时，验证码直接回显在界面上（本地模式）
     DESKTOP_APP: "1",
+    // 图片与扫描件走视觉模型读字（模型来自「设置 → AI」，这里只开开关）
+    OCR_USE_LLM: "true",
   };
 
   // 邮件服务只认用户在「邮箱服务设置」里填的那份。
@@ -840,6 +850,118 @@ function openPath(p) {
   void shell.openPath(p).catch(() => {});
 }
 
+// ---------------- 自动更新 ----------------
+//
+// 打包后从发布渠道拉 latest.yml 比对版本；发现新版本后台下载，下完提示重启安装。
+// 更新源默认是 GitHub Releases（package.json 的 build.publish），
+// 也可以用环境变量 IV_UPDATE_URL 指向任意静态托管（国内更稳），只需放三个文件：
+//   InsightVault-<ver>-win-x64.exe / .blockmap / latest.yml
+
+function updaterUsable() {
+  return !!autoUpdater && app.isPackaged;
+}
+
+function setupAutoUpdater() {
+  if (!updaterUsable()) return;
+
+  const override = process.env.IV_UPDATE_URL;
+  if (override) {
+    const base = override.replace(/\/+$/, "");
+    autoUpdater.setFeedURL({ provider: "generic", url: `${base}/` });
+    console.log("[updater] 使用自定义更新源:", base);
+  }
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.logger = {
+    info: (m) => console.log("[updater]", m),
+    warn: (m) => console.warn("[updater]", m),
+    error: (m) => console.error("[updater]", m),
+    debug: () => {},
+  };
+
+  autoUpdater.on("update-available", (info) => {
+    void dialog.showMessageBox({
+      type: "info",
+      title: "发现新版本",
+      message: `灵感仓 ${info.version} 正在后台下载`,
+      detail: "下载完成后会提示你重启安装，数据不受影响。",
+      buttons: ["知道了"],
+    });
+  });
+
+  autoUpdater.on("error", (err) => {
+    console.error("[updater] 检查/下载失败:", err?.message ?? err);
+  });
+
+  autoUpdater.on("update-downloaded", (info) => {
+    void dialog
+      .showMessageBox({
+        type: "info",
+        title: "更新已就绪",
+        message: `灵感仓 ${info.version} 已下载完成`,
+        detail: "重启后完成安装。",
+        buttons: ["立即重启", "稍后"],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then(({ response }) => {
+        if (response === 0) {
+          quitting = true;
+          setImmediate(() => autoUpdater.quitAndInstall());
+        }
+      });
+  });
+
+  // 启动 20 秒后查一次（等本地服务起来），之后每 6 小时一次
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch(() => {});
+  }, 20_000);
+  setInterval(
+    () => {
+      autoUpdater.checkForUpdates().catch(() => {});
+    },
+    6 * 60 * 60 * 1000,
+  );
+}
+
+async function checkForUpdatesInteractive() {
+  if (!updaterUsable()) {
+    void dialog.showMessageBox({
+      type: "info",
+      title: "检查更新",
+      message: "当前运行的是开发版，不检查更新。",
+      detail: "安装版会从发布渠道自动检查。",
+    });
+    return;
+  }
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    const remote = result?.updateInfo?.version;
+    if (!remote || remote === app.getVersion()) {
+      void dialog.showMessageBox({
+        type: "info",
+        title: "检查更新",
+        message: `已经是最新版本（v${app.getVersion()}）`,
+      });
+    } else {
+      void dialog.showMessageBox({
+        type: "info",
+        title: "发现新版本",
+        message: `v${remote} 正在后台下载`,
+        detail: "下载完成后会提示重启安装。",
+      });
+    }
+  } catch (e) {
+    void dialog.showMessageBox({
+      type: "error",
+      title: "检查更新失败",
+      message: String(e?.message ?? e).slice(0, 300),
+      detail: "如果是网络问题，可以设置环境变量 IV_UPDATE_URL 指向自建更新源。",
+    });
+  }
+}
+
 function createTray() {
   const img = nativeImage.createFromPath(iconPath());
   tray = new Tray(
@@ -876,6 +998,7 @@ function createTray() {
       { label: "打开数据目录", click: () => openPath(dataDir()) },
       { label: "打开日志目录", click: () => openPath(logDir()) },
       { label: "邮箱服务设置（SMTP）…", click: () => openSmtpSettings() },
+      { label: "检查更新…", click: () => void checkForUpdatesInteractive() },
       { type: "separator" },
       {
         label: "关于",
@@ -992,6 +1115,7 @@ if (!gotLock) {
     await createWindow();
     createTray();
     registerShortcuts();
+    setupAutoUpdater();
 
     app.on("activate", () => showWindow());
   });
