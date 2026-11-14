@@ -370,11 +370,19 @@ export const bookmarksAppRouter = router({
               message: quotaResult.error,
             });
           }
+          // 上传的文件（PDF / 图片）没有标题时用文件名当标题，列表里才不会是一片空白
+          const derivedTitle =
+            input.title ??
+            (input.type === BookmarkTypes.ASSET && input.fileName
+              ? input.fileName.replace(/\.[a-zA-Z0-9]{1,10}$/, "").trim() ||
+                input.fileName
+              : null);
+
           const bookmark = tx
             .insert(bookmarks)
             .values({
               userId: ctx.user.id,
-              title: input.title,
+              title: derivedTitle,
               type: input.type,
               archived: input.archived,
               favourited: input.favourited,

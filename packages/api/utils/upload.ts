@@ -76,7 +76,11 @@ export async function uploadAsset(
     detectedType?.mime ?? fallbackType ?? "application/octet-stream";
 
   // Replace all non-ascii characters with underscores
-  const fileName = data.name.replace(/[^\x20-\x7E]/g, "_");
+  // 只清理文件名里真正危险的字符，保留中文原名（否则「报告.pdf」会变成「__4____.pdf」）
+  const fileName =
+    data.name
+      .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_")
+      .trim() || "upload";
   if (!SUPPORTED_UPLOAD_ASSET_TYPES.has(contentType)) {
     return { error: "Unsupported asset type", status: 400 };
   }
