@@ -14,7 +14,7 @@
   },
   "build": {
     "appId": "app.insightvault.desktop",
-    "productName": "灵感仓",
+    "productName": "Insight Vault",
     "directories": {
       "output": "release"
     },
@@ -84,7 +84,7 @@
         "nsis"
       ],
       "artifactName": "InsightVault-${version}-win-${arch}.${ext}",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": true
     },
     "nsis": {
       "oneClick": false,
@@ -112,7 +112,8 @@
         "owner": "crushht",
         "repo": "insight-vault"
       }
-    ]
+    ],
+    "executableName": "InsightVault"
   },
   "devDependencies": {
     "electron": "45.3.0",
