@@ -249,6 +249,13 @@ export async function extractAndSavePDFScreenshot(
       quotaApproved,
     });
 
+    if (!screenshot.buffer || screenshot.buffer.byteLength === 0) {
+      logger.warn(
+        `[assetPreprocessing][${jobId}] 截图缓冲区为空（多半是缺少 ImageMagick/GraphicsMagick），跳过写库以免前端出现破图。`,
+      );
+      return true;
+    }
+
     // Insert into database
     await db.insert(assets).values({
       id: assetId,
